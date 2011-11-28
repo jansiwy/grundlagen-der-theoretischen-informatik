@@ -1,0 +1,8 @@
+skript.pdf
+.DS_Store
+*.aux
+*.idx
+*.log
+*.out
+*.synctex.gz
+*.toc
