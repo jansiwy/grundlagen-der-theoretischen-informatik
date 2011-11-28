@@ -1,0 +1,235 @@
+\chapter{Kontextfreie Sprachen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Grammatiken und die Chomsky-Hierarchie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Grammatiken und die Chomsky-Hierarchie}
+
+\textbf{Hinweis:\;} Eine \emph{Grammatik} ist ein System, um Ausdrücke (Wörter) nach bestimmten Regeln zu bilden, und beschreibt eine Sprache. \par \abstand
+\textbf{Bemerkung:\;} Dieses Prinzip ist bereits aus der Bildung von Formeln, Termersetzungsverfahren, Aufbau von Programmiersprachen bekannt. \par \abstand
+\textbf{Definition:\;} Eine Grammatik ist eine 4-Tupel $G = (V, \Sigma, P, S)$:
+\begin{itemize}
+    \item $V$: endliche Menge von Variablen (Großbuchstaben)
+    \item $\Sigma$: endliches Terminalalphabet ($\Sigma \cap V = \emptyset$)
+    \item $S \in V$: Startvariable
+    \item $P$: endliche Menge von Regeln (Produktionen)
+    $$ P \subseteq (\Sigma \cup V)^+ \times (\Sigma \cup V)^* $$
+\end{itemize}
+
+Ist $u = xyz, v = xy'z \in (\Sigma \cup V)^*$ und ist $(y, y') \in P$, dann sagen wir, dass $v$ aus $u$ ableitbar (unter G) ist (oder $u$ geht in $v$ über). Wir schreiben dafür:
+$$ u \Longrightarrow_G v \platz (\text{kurz: } u \Longrightarrow v \platz) $$
+
+$\overset{*}{\Longrightarrow}_G$ ist reflexiver und transitiver Abschluss von $\Longrightarrow_G$, d.h. $u \overset{*}{\Longrightarrow}_G v$, wenn $u = u_0 \Longrightarrow_G u_1 \Longrightarrow_G \ldots \Longrightarrow_G u_k = v $
+$$ L(G) = \{w \in \Sigma^* \tr S \overset{*}{\Longrightarrow}_G w \} $$
+\pagebreak
+
+\textbf{Beispiel:}
+\begin{enumerate}
+    \item Korrekte Klammerausdrücke:
+    $$ G = ( \{ S \}, \{ (, ) \}, P, S ) \platz \text{mit} \platz P = \{ (S, ()), (S, (S)), (S, SS) \} $$
+    Ableitung und Syntaxbaum:
+    \begin{eqnarray*}
+        S &\Longrightarrow_G& S\underline{S} \\
+          &\Longrightarrow_G& S(\underline{S}) \\
+          &\Longrightarrow_G& \underline{S}(SS) \\
+          &\Longrightarrow_G& ()(S\underline{S}) \\
+          &\Longrightarrow_G& ()(\underline{S}()) \\
+          &\Longrightarrow_G& ()(()())
+    \end{eqnarray*}
+    \item Palindrome
+    $$ G = ( \{ S \}, \{ 0, 1 \}, P, S ) \platz \text{mit} \platz P = \{ (S, 0), (S, 1), (S, 00), (S, 11), (S, 0S0), (S, 1S1) \} $$
+    Beispiel:
+    $$ 10001: S \Longrightarrow 1S1 \Longrightarrow 10S01 \Longrightarrow 10001 $$
+    Kürzere Darstellung der Regeln mit einer Variable auf der linken Seite:
+    $$ S \rightarrow 0 \tr 1 \tr 00 \tr 11 \tr 0S0 \tr 1S1 $$
+    Nennt man \wichtig{Backus-Naur-Form} (\wichtig{BNF})
+\end{enumerate}
+
+\textbf{Definition:}
+\begin{itemize}
+    \item Jede Grammatik ist (zunächst) vom Typ 0 (keine Einschränkung).
+    \item Eine Grammatik ist vom Typ 1 (kontextsensitiv), falls für alle Regeln $w_1 \rightarrow w_2$ gilt: $|w_1| \leq |w_2|$.
+    \item Eine Grammatik ist vom Typ 2 (kontextfrei), falls für alle Regeln $w_1 \rightarrow w_2$ so sind, dass $w_1 \in V$ und $|w_2| \geq 1$
+    \item Eine Grammatik ist vom Typ 3 (regulär), falls für alle Regeln $w_1 \rightarrow w_2$ so sind, dass $w_1 \in V$ und $w_2 \in \Sigma \cup \Sigma V$
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Kontextfreie Sprachen und Normalform}
+\textbf{Definition:\;} Sprache $L$ ist kontextfrei, wenn eine Typ 2-Grammatik existiert, so dass $L = L(G)$. \par \abstand
+\textbf{Beispiel:\;} $L = \{ a^n b^n \tr n \in \natpos \}$ ist kontextfrei (aber nicht regulär).
+$$ S \rightarrow ab \tr aSb $$
+
+\textbf{Definition:\;} Eine kontextfreie Grammatik $G$ mit $\varepsilon \notin L(G)$ ist in \wichtig{Chomsky-Normalform} (kurz: \wichtig{CNF}), falls alle Regeln die folgende Form haben:
+\begin{eqnarray*}
+    A \rightarrow a & & A \in V, a \in \Sigma \\
+    A \rightarrow BC & & A, B, C \in V
+\end{eqnarray*}
+
+CNF impliziert binäre Syntaxbäume der Ableitungen, wenn man den letzten Schritt der Umwandlung in Terminalsymbole vernachlässigt. \par \abstand
+\textbf{Beispiel:\;} CNF von $L = \{ a^n b^n \tr n \in \natpos \}$:
+\begin{eqnarray*}
+    S &\rightarrow& AT \\
+    T &\rightarrow& SB \tr b \\
+    A &\rightarrow& a \\
+    B &\rightarrow& b
+\end{eqnarray*}
+\begin{center}
+    GRAFIK: Binärbaum für $aabb$
+\end{center}
+
+Schematisch:
+\begin{center}
+    GRAFIK: Dreick (binär) mit Rechteck drunter (letzter Schritt)
+\end{center}
+
+\textbf{Satz:\;} Für jede kontextfreie Grammatik $G$ existiert eine CNF $G'$, so dass $L(G) = L(G')$ (d.h. $G$ und $G'$ sind äquivalent). \par \abstand
+\textbf{Beweis:}
+\begin{enumerate}
+    \item Elemination von Regeln der Form $A \rightarrow B$
+    \begin{enumerate}
+        \willbuch
+        \item Wenn ein Kreis $A_1 \rightarrow A_2 \rightarrow \ldots \rightarrow A_k \rightarrow A_1$ ersetze $A_1, A_2, \ldots A_k$ durch neue Variable $A$ (für alle Regeln).
+        \item wenn weiterhin eine Regel $B_1 \rightarrow B_2$ existiert, streichen diese Regel und ergänzen die aus $B_1$ abgeleiteten Regeln mit denen, die aus $B_2$ abgeleitet werden.
+    \end{enumerate}
+    \item Alle Regeln haben die Form
+    $$ A \rightarrow a \platz \text{oder} \platz A \rightarrow x \in (V \cup \Sigma)^* $$
+    \begin{enumerate}
+        \willbuch
+        \item Für jedes $a \in \Sigma$ fügt man ein neues $B_a$ zu $V$ hinzu sowie die Regeln $B_a \rightarrow a$.
+        \item Regel $A \rightarrow x = A_1 A_2 b_1 A_3 b_2$ wird ersetzt durch (am Beispiel)
+        $$ A \rightarrow A_1 A_2 B_{b_1} A_3 B_{b_2} $$
+        \item Für jeden Suffix der Länge $\geq 2$ Hilfsvariable einführen (am Beispiel)
+        \begin{eqnarray*}
+            A \rightarrow A_1 C_1 \\
+            C_1 \rightarrow A_2 C_2 \\
+            C_2 \rightarrow B_{b_1} C_3 \\
+            C_3 \rightarrow A_3 B_{b_2}
+        \end{eqnarray*}
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{Anwendung:\;} Umformung für $S \rightarrow ab \tr aSb$:
+\begin{eqnarray*}
+    A &\rightarrow& a \\
+    B &\rightarrow& b \\
+    S &\rightarrow& AB \tr AC \\
+    C &\rightarrow& SB
+\end{eqnarray*}
+
+\textbf{Definition:\;} Eine kontextfreie Grammatik ist in \wichtig{Greibach Normalform} (kurz: \wichtig{GNF}), falls alle Regeln die Form $A \rightarrow a B_1 \ldots B_k$ ($k \in \nat$) haben. \par \abstand
+\textbf{Satz:\;} Für jede kontextfreie Grammatik gibt es eine äquivalente GNF (ohne Beweis). \par \abstand
+
+\textbf{CYK-Algorithmus:}
+\begin{itemize}
+    \item Gegeben: $G = (V, \Sigma, P, S)$ in CNF und $w = a_1, a_2, \ldots a_n \in \Sigma^*$
+    \item Frage: $w \in L(G)$ ?
+    \item Idee: $w \in L(G)$ betrachte oberste Stufe des Syntaxbaums einer Ableitung: $S \Longrightarrow_G AB$, dann wird aus $A$ ein Präfix von $w$ abgeleitet, aus $B$ ein Suffix.
+    \item Cocke, Younger, Kasami: Anwendung von dynamischer Programmierung
+    $$ w_{i, j} = \underbrace{a_i a_{i+1} \ldots a_{i+j-1}}_{\text{fängt mit $a_i$ an und hat Länge $j$}} $$
+    $$ T_{i, j} = \{ A \in V \tr A \overset{*}{\Rightarrow}_G w_{i, j} \} $$
+    $$ S \in T_{1, n} \platz \Leftrightarrow \platz S \overset{*}{\Rightarrow}_G w_{1, n} \platz \Leftrightarrow \platz w \in L(G) $$
+    \item Initialisierung:
+    $$ T_{i, 1} = \{ A \tr (A, a_i) \in P \} $$
+    \begin{itemize}
+        \item[] \verb"for i = 2 to n"
+        \begin{itemize}
+            \item[] \verb"for i = 1 to n - j + 1"
+            $$ T_{i, j} = \bigcup_{k = 1}^{j - 1} \{ A \tr \exists B \in T_{i, k}, C \in T_{i + k, j - k} \text{ und } (A, B C) \in P \} $$
+        \end{itemize}
+    \end{itemize}
+    \item Laufzeit: $\bigO(n^3)$
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Pumping-Lemma}
+\textbf{Satz:\;} Für jede kontextfreie Sprache $L$ existiert ein $n \in \nat$, so dass für jedes $z \in L$ mit $|z| \geq n$ eine Zerlegung $z = uvwxy$ existiert mit:
+\begin{itemize}
+    \item $|vwx| \leq n$
+    \item $|vx| \geq 1$
+    \item $\forall i \in \nat$ ist $z' = u v^i w x^i y \in L$
+\end{itemize}
+
+\textbf{Beispiele:}
+\begin{enumerate}
+    \item $L = \{ a^k b^k \tr k \in \nat \}$ ist kontextfrei, also erfüllt es das Pumping-Lemma. \par \abstand
+    Man setzt $n = 2$ imd betrachtet ein $z \in L$ mit $|z| \geq n = 2$. Dann ist
+    $$ z = a^k b^k \text{ mit } k \geq 1 $$
+    und man findet eine Zerlegung
+    $$ z = \underbrace{a \ldots}_{u} \underbrace{a}_{v} \underbrace{\varepsilon}_{w} \underbrace{b}_{x} \underbrace{\ldots b}_{y} $$
+    Wie man leicht sieht:
+    $$ z' = uv^i w x^i y = a^{k+(i-1)} b^{k+(i-1)} \in L $$
+    \item $L = \{ a^k b^k c^k \tr k \in \nat \}$ ist nicht kontextfrei. \\
+    Indirekter Beweis: Angenommen $L$ wäre kontextfrei, dann gibt es ein $n$ aus dem Pumping-Lemma, $\ldots$ \\
+    \begin{eqnarray*}
+        a^n b^n c^n &=& uvwxy \\
+        \text{Aus 1) } vwx &\in& \underbrace{a^* b^*}_{\text{Fall 1}} \cup \underbrace{b^* c^*}_{\text{Fall 2}} \\
+        z' = u v^2 w x^2 y
+    \end{eqnarray*}
+    \begin{itemize}
+        \item Fall 1: Anzahl der $a$'s oder Anzahl der $b$'s in $z'$ ist $>n$, Anzahl der $c$'s gleich $n$ \\
+        $\Rightarrow z' \notin L \Rightarrow$ Widerspruch
+        \item Fall 2: Anzahl der $b$'s oder Anzahl der $c$'s in $z'$ ist $>n$, Anzahl der $a$'s gleich $n$ \\
+        $\Rightarrow z' \notin L \Rightarrow$ Widesrspruch
+    \end{itemize}
+    Widerspruch zur Annahme, d.h. $L$ ist nicht kontextfrei.
+\end{enumerate}
+
+\textbf{Beweis der Pumping-Lemmas:\;} Sei $G$ CNF für $L$.
+$$ G = (V, \Sigma, P, S) $$
+Man definiert: $k = |V|$ und $n := 2^k$ \\
+Sei $z \in L$ mit $|z| \geq n$ \\
+Aufgabe: Zerlegung finden \\
+Syntaxbaum $T$ für eine Ableitung von $z$ ohne Terminalsymbole ist binär und hat $|z|$ Blätter. Daraus folgt, dass die Tiefe von $T \geq k$. \\
+Man betrachtet einen Weg maximaler Länge (also $\geq k$), dann muss auf dem Weg eine Variable doppelt austreten. \\
+Man betrachtet erste Variablendopplung von unten und die entsprechenden Unterbäume
+\begin{center}
+    GRAFIK: Unterbäume
+\end{center}
+Beide haben höchstens Tiefe $k$ höchstens $2^k = n$ Blätter. \\
+Zerlegung $uvwxy$:
+\begin{itemize}
+    \item $|vwx| \leq n$, da größerer Baum $\leq n$ Blätter hat
+    \item $|vx| \geq 1$, da die Bäume verschieden sind (kleiner Baum ist Unterbaum)
+    \item $z' = u v^j w x^j y = uwy$ wird durch folgenden baum abgebildet:
+    \begin{center}
+        GRAFIK: kleinen Baum nach oben
+    \end{center}
+    $z'' = u v^2 w x^2 y$
+    \begin{center}
+        GRAFIK: großer Baum doppelt
+    \end{center}
+    Jede weitere $u v^{i+1} w x^{i+1} y$ durch Ersetzung des kleinen Baum durch den großen
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Kellerautomaten}
+\textbf{Idee:\;} Automat darf Eingabe nur einmal von links nach rechts lesen und kann Informationen in einem Kellerspeicher aufbewahren.
+\begin{center}
+    GRAFIK: Schema
+\end{center}
+Formel:\; Ein nichtdeterministischer Kellerautomat (kurz: \wichtig{NPDA}) wird durch ein 6-Tupel beschrieben:
+$$ M = (Q, \Sigma, \Gamma, \delta, q_0, \#) $$
+\begin{itemize}
+    \item $Q$: endliche Zustandsmenge
+    \item $\Sigma$: Eingabealphabet (kleine Buchstaben)
+    \item $\Gamma$: Kelleralphabet (große Buchstaben)
+    \item $\delta$: Zustandsüberführungsfunktion
+    $$ \delta : Q \times (\Sigma \cup \{ \varepsilon \}) \times \Gamma \rightarrow \underset{e}{\pot}(Q \times \Gamma^*) $$
+    $\underset{e}{\pot}$ heißt: Menge aller endlichen Teilmengen
+    \item $q_0 \in Q$: Startzustand
+    \item $\# \in \Gamma$: unterstes Kellerzeichen
+\end{itemize}
+
+\textbf{Arbeitsweise:\;} $(q', B_1 \ldots B_k) \in \delta(q, a, A)$ \\
+Wenn $M$ im Zustand $q$ und $a$ auf dem Band und $A$ in oberster Kellerzelle liest, so kann er in $q'$ übergehen, $A$ löschen und $B_1 \ldots B_k$ in den Keller speichern ($B_1$ oben). \\
+$(q', B_1 \ldots B_k) \in \delta(q, \varepsilon, A)$ \\
+Wenn $M$ im Zustand $q$ auf oberster Kellerzelle $A$ liest, kann er ohne Eingabesymbol zu lesen in $q'$ übergehen, $A$ löschen und $B_1 \ldots B_k$ speichern. \\
+
+\textbf{Konfiguration:\;} $k \in \underbrace{Q}_{\text{aktueller Zustand}} \times \underbrace{\Sigma^*}_{\text{ungelesen}} \times \underbrace{\Gamma^*}_{\text{Kellerinhalt}}$ \\
+$k \vdash k'$: $k'$ ist direkte Folgekonfiguration von $k$ \\
+$k \overset{*}{\vdash} k'$: $k = k_0 \vdash k_1 \vdash \ldots \vdash k_n = k'$ \\
+
+\textbf{Akzeptierende Endkonfiguration:\;} $(q, \varepsilon, \varepsilon)$ wobei $q$ beliebig \\
+
+\textbf{Definition:\;} $w \in L(M) \platz \Leftrightarrow \platz (q_0, w, \#) \overset{*}{\vdash} (q, \varepsilon, \varepsilon)$

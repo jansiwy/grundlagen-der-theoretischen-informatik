@@ -1,0 +1,647 @@
+\chapter{Berechenbarkeit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Turing-Maschinen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Turing-Maschinen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Einleitung}
+\textbf{Idee:\;} Statte einen DFA mit der Fähigkeit aus, Informationen zu speichern, zu lesen und zu löschen. \par \abstand
+\begin{center}
+    \includegraphics{skript/grafiken/tm}
+\end{center}
+\pagebreak
+
+\textbf{Definition:\;} Eine \wichtig{Turing-Maschine}\index{TM} (TM) ist gegeben durch ein 7-Tupel.
+$$ M=(q, \Sigma, \Gamma, \delta, q_0, \square, F) $$
+\begin{itemize}
+    \item $Q$: endlicher Zustandsmenge
+    \item $\Sigma$: Eingabealphabet
+    \item $\Gamma$: Arbeitsalphabet
+    \seite
+    \item $\delta$: Überführungsfunktion \par
+    \begin{center}\begin{tabular}{ccccccccccc}
+      $\delta$ & $:$ & $Q$ & $\times$ & $\Gamma$ & $\hookrightarrow$ & $Q$ & $\times$ & $\Gamma$ & $\times$ & $\{L, R, N\}$ \\ \\
+               &     & $\uparrow$ &   & $\uparrow$ &             & $\uparrow$ &   & $\uparrow$ &        & $\uparrow$ \\
+               &     & { \tiny \begin{tabular}{c} alter \\ Zustand \end{tabular} } & & { \tiny Lesen } &               & { \tiny \begin{tabular}{c} neuer \\ Zustand \end{tabular} } & & \tiny Schreiben& & { \tiny \begin{tabular}{c} Kopf- \\ bewegung \end{tabular} }
+    \end{tabular}\end{center}
+    \item $q_0$: Anfangszustand
+    \item $\square$: Leerzeichen (Blank; $\square \in \Gamma \; \backslash \; \Sigma$)
+    \item $F$: Endzustände
+    \begin{itemize}
+        \item Einteitung in akzeptierende und verwerfende möglich
+        \item Überführungsfunktion $\delta$ muss für $q \in F$ nicht definiert sein
+    \end{itemize}
+\end{itemize}
+\pagebreak
+
+\textbf{Beispiel:\;} Turing-Maschine für $L = \{ 0^n 1^n \tr n \in \nat \}$
+\begin{verbatim}
+    Solange Band nicht leer
+        Lösche eine Null
+        Wenn nicht möglich: Verwerfen
+        Lösche eine Eins
+        Wenn nicht möglich: Verwerfen
+    Akzeptieren
+\end{verbatim}
+
+\begin{center}
+    \includegraphics{skript/grafiken/tmnulleneinsen}
+\end{center}
+
+\begin{center}\begin{tabular}{r|c|c|c}
+        & $0$ & $1$ & $\Box$ \\ \hline
+  $q_0$ & $q_1$, $\square$, $R$ & $q_5$, $1$, $N$ & $q_4$, $\square$, $N$ \\
+  $q_1$ & $q_1$, $0$, $R$ & $q_1$, $1$, $R$ & $q_2$, $\square$, $L$ \\
+  $q_2$ & $q_5$, $0$, $N$ & $q_3$, $\square$, $L$ & ($q_5$, $\square$, $N$) \\
+  $q_3$ & $q_3$, $0$, $L$ & $q_3$, 1, $L$ & $q_0$, $\square$, $R$ \\
+  akzeptieren $q_4$ & -- & -- & -- \\
+  verwerfen $q_5$ & -- & -- & --
+\end{tabular}\end{center}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Konfiguration}
+\textbf{Definition:\;} Eine \wichtig{Konfiguration} ist eine Momentaufnahme der Arbeit einer Turing-Maschine charakterisiert durch Bandinhalt (ohne $\square$), Zustand $q \in Q$ und Kopfposition. \par \abstand
+Eine Konfuguration wird repräsentiert durch $\alpha \; q \; \beta \in \Gamma^* \; Q \; \Gamma^*$.
+\begin{itemize}
+    \item $\alpha$: Bandinhalt links von Kopfposition
+    \item $q$: aktueller Zustand
+    \item $\beta$: Bandinhalt ab Kopfposition
+\end{itemize}
+Die Folgekonfiguration $k'$ einer Konfiguration $k = \alpha \; q \; \beta$ ist bei $\alpha = \alpha' \; a$ und $\beta = b \; \beta'$ folgermaßen charakterisiert:
+$$ k' = \left\{ \begin{array}{rcl}
+  \alpha' \; q' \; a \; b' \; \beta' & \text{ falls } & \delta(q, b) = (q', b', L) \\ \\
+  \alpha \; b' \; q' \; \beta' & \text{ falls } & \delta(q, b) = (q', b', R) \\ \\
+  \alpha \; q' \; b' \; \beta' & \text{ falls } & \delta(q, b) = (q', b', N)
+\end{array} \right. $$
+
+Schreibweise:
+\begin{itemize}
+    \item $k \vdash k'$ heißt $k'$ ist Folgekonfiguration von $k$
+    \item $k \overset{*}{\vdash} k'$ heißt $k = k_0 \vdash k_1 \vdash \ldots \vdash k_m = k'$
+\end{itemize}
+
+\textbf{Definition:\;} $\varepsilon \; q_0 \; w$ mit $w \in \Sigma^*$ ist Startkofiguration. \par \abstand
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Berechnung und Entscheidung}
+\textbf{Definition:\;} Die \wichtig{Berechnung} einer Turing-Maschine ist eine Konfigurationsfolge
+$$k_0 \vdash k_1 \vdash k_2 \vdash k_3 \vdash \ldots$$
+die mit der Startkonfiguration beginnt und entweder unendlich ist oder mit einer Endkonfiguration aufhört, für die keine Folgekonfiguration definiert ist. \par \abstand
+Bei einer Endkonfiguration ist der Bandinhalt definiert als Ausgabe. \par \abstand
+
+\textbf{Definition:\;} Während bei einer Berechnung aus einer Eingabe entweder das gesamte Band als Ausgabe folgt (sofern die Turing-Maschine in keine Endlosschleife gerät), folgt bei der \wichtig{Entscheidung} aus der Eingabe entweder die Ausgabe $0$ (verwerfen) oder $1$ (akzeptieren).
+\begin{itemize}
+    \item Akzeptierender Endzustand: Band löschen und $1$ schreiben
+    \item Verwerfender Endzustand: Band löschen und $0$ schreiben
+    \item unendliche Berechnungen: Ausgabe nicht definiert
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Codierung endliche Informationsmengen in $Q$}\index{Codierung endliche Informationsmengen in $Q$}\label{codierung}
+Durch Erweiterung der Zustandsmenge $Q$ mit einem $k$-stelligen Bitvektor, kann man in jedem Zustand eine fest begrenzte Informationsmenge speichern.
+$$ Q' = Q \times \underbrace{ \{ 0, 1 \} \times \{ 0, 1 \} \times \ldots \times \{ 0, 1 \} }_{\text{\tiny $k$ Bit}} $$
+
+\subsection{Erweiterung und Reduktion des Bandalphabets}\index{Erweiterung des Bandalphabets}\index{Reduktion des Bandalphabets}
+\textbf{Satz:\;} Das Bandalphabet $\Gamma$ einer Turing-Maschine kann beliebig zu $\Gamma'$ erweitert werden.
+$$ \Gamma \platz \Rightarrow \platz \Gamma' \platz \platz \platz (\text{mit } \Gamma \subset \Gamma') $$
+\textbf{Satz:\;} Jede Turing-Maschine $M$ mit Bandalphabet $\Gamma$ kann durch eine Turing-Maschine $M'$ mit $\Gamma'~=~\{ 0, 1 \}$ "`simuliert"' werden. \par \abstand
+\textbf{Definition:\;} \wichtig{Simulation} ist die Codierung der Konfigurationen von $M$ in Konfigurationen von $M'$.
+$$k \platz \mapsto \platz c(k)$$
+Jeder Schritt von $M$ wird durch endlich viele Schritte von $M'$ simuliert.
+$$ k \vdash k' \platz \mapsto \platz c(k) \vdash c_1 \vdash c_2 \vdash \ldots \vdash c_m \vdash c(k') $$
+\textbf{Beweis:}
+\begin{itemize}
+    \item Codierung von $\Gamma$ in $\{ 0, 1 \}^k$ wobei $k = \left\lceil \log_2 |T| \right\rceil$. Jede Zelle von $M$ wird durch einen Block von $k$ Zellen auf dem Band von $M'$ dargestellt.
+    \begin{center}
+        \includegraphics{skript/grafiken/tm1zuk}
+    \end{center}
+    \pagebreak
+    \item Simulation eines Schritts von $M$:
+    \begin{itemize}
+        \item $M'$ steht auf erster von $k$ Zellen, welche die aktuelle Zelle von $M$ darstellen.
+        \item $M'$ geht $k-1$ Schritte nach rechts und "`speichert"' Bandinformation (siehe \ref{codierung}).
+        \item $M'$ führt intern Übergangsfunktion von $M$ aus. $M'$ kennt neuen Zustand, Schreibanweisung und Kopfbewegung von $M$.
+        \item $M'$ geht $k-1$ Schritte nach links und führt Schreibanweisung aus.
+        \item wenn $M$ den Kopf nach links (rechts) bewegt, macht $M'$ $k$ Bewegungen nach nach links (rechts).
+    \end{itemize}
+    Simulationszeit für einen Schritt: $3k - 2$ (konstant)
+\end{itemize}
+
+\subsection{Mehrbandmaschinen}\index{Mehrbandmaschinen}
+Eine Mehrbandmaschine kann eine endliche Anzahl von Bändern unabhängig voneinander lesen und beschreiben sowie den Schreib-Lesekopf bewegen.
+$$\delta : Q \times \Gamma^k \hookrightarrow Q \times \Gamma^k \times \{ L, R, N \}^k$$
+\begin{center}
+    \includegraphics{skript/grafiken/tmmehrband}
+\end{center}
+\pagebreak
+\textbf{Satz:\;} Jede $k$-Band-Turing-Maschine $M$ kann durch eine Ein-Band-Turing-Maschine $M'$ simuliert werden. \par \abstand
+\textbf{Beweis:\;} $M'$ simuliert $k$ Bänder durch $k$ Spuren auf einem Band $\Gamma' = \Gamma^k$.
+\begin{center}
+    \includegraphics{skript/grafiken/tmmehrbandsimul}
+\end{center}
+Sofern sich jedoch die Köpfe von $M$ auf den einzelnen Bändern in unterschiedliche Richtungen bewegen, werden die Spuren $2$ bis $k$ rekonfiguriert, so dass alle Kopfpositionen wieder übereinander liegen.
+\begin{center}
+    \includegraphics{skript/grafiken/tmmehrbandsimul2}
+\end{center}
+Simulationszeit: $2 \cdot l$ wobei $l =$ Länge des beschriebenen Bandes \par \abstand
+\textbf{Satz:\;} Jede Berechnung einer $k$-Band-Turing-Maschine $M$ der Länge $t$ ($t \geq$ Eingabengröße) kann in $c \cdot t^2$ Zeit ($c$ ist konstant) durch eine Ein-Band-Turing-Maschine simuliert werden.
+\pagebreak
+
+\subsection{Verwendung von Unterprogrammen}\index{Unterprogramme}
+Die Turing-Maschine $M$ soll ein Unterprogramm (Prozedur) nutzen, das von der Turing-Maschine $M'$ ausgeführt wird:
+\begin{itemize}
+    \item $M$ bekommt zusätzliches Band und schreibt darauf die Übergabeparameter.
+    \item $M'$ rechnet nur auf dem Zusatzband.
+    \item $M$ kann Ergebnis auf Zusatzband lesen.
+\end{itemize}
+Schleifen werden realisiert als Unterprogramme mit Abbruchbedingung.
+
+\subsection{Verkettete Funktionen}\index{Verkettete Funktionen}
+Sei $f : \Sigma^* \rightarrow \Gamma^*$ die von $M$ berechnete Funktion. \\
+Sei $g : \Gamma^* \rightarrow \Lambda^*$ die von $M'$ berechnete Funktion. \par
+Die Maschine $M; M'$ arbeitet wie folgt:
+\begin{itemize}
+    \item Sie führt alle Schritte so wie $M$ aus.
+    \item Falls $M$ stoppt, geht sie auf linkeste beschriebene Stelle des Bandes
+    \item $M'$ startet.
+\end{itemize}
+$M; M'$ berechnet die Funktion $gf : \Sigma^* \rightarrow \Lambda^*$
+
+\subsection{Strukturierung von Ein- und Ausgaben}
+Zur Strukturierung von Ein- und Ausgaben wird das Trennsymbol \# verwendet. \par \abstand
+\textbf{Beispiel:\;} z.B. $bin(x)\#bin(y)$ als Eingabe für Addition
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Church'sche These
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Church'sche These}\index{Church'sche These}
+
+\textbf{Definition:\;} Eine Relation $f \subseteq A \times B$ beschreibt eine \wichtig{partielle Funktion} von $A$ nach $B$ ($f : A \hookrightarrow B$), wenn jedes $a \in A$ zu höchstens einem $b \in B$ in Relation steht ($f(a)=b$ falls solch ein $b$ existiert). \par \abstand
+
+\textbf{Definition:\;} Jede Turing-Maschine $M$ berechnet eine partielle Funktion $f_M : \Sigma^* \hookrightarrow \Gamma^*$, wobei $f_M(w)$ nicht definiert ist, wenn $M$ bei Eingabe $w$ nicht hält, und der Bandinhalt am Ende der Berechnung $f_M(w)$ ist. Eine Funktion $f_M$ heißt \wichtig{Turing-berechenbar}. \par \abstand
+
+\textbf{Beobachtung:} ($f : \Sigma^* \hookrightarrow \Gamma^*$)
+\begin{center}\begin{tabular}{rcl}
+   $f$ ist Turing-berechnenbar & $\Leftrightarrow$ & $f$ ist $\mu$-rekursiv \\
+   & $\Leftrightarrow$ & $f$ ist berechenbar mit $\lambda$-Kalkül \\
+   & $\Leftrightarrow$ & $f$ ist berechenbar durch Registermaschinen \\
+                     & & (von Neumann-Rechner) \\
+   & $\Leftrightarrow$ & $\ldots$
+\end{tabular}\end{center}
+
+\textbf{Church'sche These:\;} Die durch die formalen Definitionen der Turing-Bere\-chenbarkeit erfasste Klasse von Funktionen stimmt mit der Klasse der \emph{intuitiv berechnbaren Funktionen}\index{intuitiv berechnbare Funktionen} überein.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Primitiv rekursive und µ-rekursive Funktionen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Primitiv und $\mu$-rekursive Funktionen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Einführung}
+\textbf{Definition:\;} Die Klasse der \emph{primitiv rekursiven Funktionen}\index{primitiv rekursive Funktion} (kurz: \wichtig{PRF}; $f~:~\nat^k~\rightarrow~\nat$) wird folgermaßen gebildet:
+\begin{itemize}
+    \item Basisfunktionen:
+    \begin{enumerate}
+        \item konstante Funktionen ($c, j \in \nat$) \\
+        $$ f(x_1, \ldots x_j) = c $$
+        \item Projektion ($i, j \in \nat$) \\
+        $$ p_{i, j}(x_1, \ldots x_j) = x_i $$
+        \item Nachfolgerfunktion \\
+        $$ s(x) = x + 1 $$
+    \end{enumerate}
+    \item Operationen:
+    \begin{enumerate}
+        \item Funktionskomposition ($j, k \in \nat$ und $g_1, \ldots g_k, h$ sind PRF) \\
+        $$ f(x_1, \ldots x_j) = h(g_1(x_1, \ldots x_j), \ldots g_k(x_1, \ldots x_j)) $$ \abstand
+        \item Primitive Rekursion ($j \in \nat$ und $g, h$ sind PRF) \\
+        \begin{eqnarray*}
+            f(0, x_1, \ldots x_j) &=& g(x_1, \ldots x_j) \\
+            f(y + 1, x_1, \ldots x_j) &=& h(f(y, x_1, \ldots x_j), y, x_1, \ldots x_j)
+        \end{eqnarray*}
+
+    \end{enumerate}
+\end{itemize}
+\pagebreak
+
+\textbf{Beispiele:}
+\begin{enumerate}
+    \item Addition
+    \begin{eqnarray*}
+        \text{\emph{add}} : \nat^2 &\rightarrow& \nat \\
+        \text{\emph{add}}(0, x) &=& p_{1, 1}(x) \\
+        \text{\emph{add}}(y+1, x) &=& s(p_{1, 3}(\text{\emph{add}}(y, x), y, x)) \\
+                                  &=& s(\text{\emph{add}}(y, x))
+    \end{eqnarray*}
+    \item Multiplikation
+    \begin{eqnarray*}
+        \text{\emph{mul}} : \nat^2 &\rightarrow& \nat \\
+        \text{\emph{mul}}(0, x) &=& 0 \\
+        \text{\emph{mul}}(y+1, x) &=& add(p_{1, 3}(\text{\emph{mul}}(y, x), y, x), p_{3, 3}(\text{\emph{mul}}(y, x), y, x)) \\
+                                  &=& add(\text{\emph{mul}}(y, x), x)
+    \end{eqnarray*}
+    \item Vorgängerfunktion
+    \begin{eqnarray*}
+        \text{\emph{pred}} : \nat &\rightarrow& \nat \\
+        \text{\emph{pred}}(0) &=& 0 \\
+        \text{\emph{pred}}(y+1) &=& p_{2, 2}(\text{\emph{pred}}(y), y)
+    \end{eqnarray*}
+    \item Prädikat ungleich 0
+    \begin{eqnarray*}
+        \text{\emph{notnull}} : \nat &\rightarrow& \{ 0, 1 \} \\
+        \text{\emph{notnull}}(0) &=& 1 \\
+        \text{\emph{notnull}}(y+1) &=& 0
+    \end{eqnarray*}
+    \item Subtraktion (erstes Argument: Minuend, zweites Argument: Subtrahend)
+    \begin{eqnarray*}
+        \text{\emph{sub}} : \nat^2 &\rightarrow& \nat \\
+        \text{\emph{sub}}(0, x) &=& x \\
+        \text{\emph{sub}}(y+1, x) &=& pred(p_{1, 3}(\text{\emph{sub}}(y, x), y, x)) \\
+                                  &=& pred(\text{\emph{sub}}(y, x)) \\
+    \end{eqnarray*}
+    \item Prädikat kleiner
+    \begin{eqnarray*}
+        \text{\emph{less}} : \nat^2 &\rightarrow& \{ 0, 1 \} \\
+        \text{\emph{less}}(x, y) &=& \text{\emph{notnull}}(\text{\emph{sub}}(x, y))
+    \end{eqnarray*}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{$\mu$-Operator}\index{$\mu$-Operator}
+Es gibt zwei grundsätzliche Programmierparadigmen:
+\begin{itemize}
+    \item Funktionaler Ansatz
+    \begin{itemize}
+        \item Primitiv rekursive Funktionen
+        \item Eigenschaft: total, d.h. überall definiert
+    \end{itemize}
+    \item Imperativer Ansatz
+    \begin{itemize}
+        \item Programm mit elementaren Operationen und \emph{statischen} Schleifen
+        \item Eigenschaft: terminiert immer
+    \end{itemize}
+\end{itemize}
+Weder mit primitiv rekursiven Funktionen noch mit imperativen Programmen, die nur statische Schleifen haben, lassen sich alle Turing-berechenbaren Funktion realisieren. Jedoch lassen sich beiden Ansätze dahingehend erweitern:
+\begin{itemize}
+    \item Funktionaler Ansatz
+    \begin{itemize}
+        \item $\mu$-rekursive Funktionen
+        \item Eigenschaft: nur partielle Funktionen
+    \end{itemize}
+    \item Imperativer Ansatz
+    \begin{itemize}
+        \item Programm mit elementaren Operationen und \verb"while"-Schleifen oder bedingten Sprunganweisungen
+        \item Eigenschaft: terminiert \emph{nicht} immer
+    \end{itemize}
+\end{itemize}
+
+\textbf{Definition:\;} Die $\mu$-Operator ist folgendermaßen definiert:
+\begin{eqnarray*}
+    g &=& \mu(f) \\
+    g(x_1, \ldots x_k) &=& \min\{ n \tr f(n, x_1, \ldots x_k)=0 \text{ und} \\
+                       & & \platz \platz \; \text{ $\forall m < n$ ist $f(m, x_1, \ldots x_k)$ definiert} \}
+\end{eqnarray*}
+Die Klasse der $\mu$-rekursiven Funktionen ist die kleinste Klasse von partiellen Funktionen, die alle primitiv rekursiven Funktionen enthält und abgeschlossen ist bezüglich der Anwendung des $\mu$-Operator. \par \abstand
+
+\textbf{Beispiel:\;} Es gibt totale Funktionen, die $\mu$-rekursiv, aber nicht primitiv rekursiv sind, z.B. die Ackermann-Funktion.
+\begin{eqnarray*}
+    a : \nat^2 &\rightarrow& \nat \\
+    a(0, y) &=& y+1 \\
+    a(x, 0) &=& a(x-1, 1) \\
+    a(x, y) &=& a(x-y, a(x, y-1))
+\end{eqnarray*}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Entscheidbarkeit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Entscheidbarkeit}\label{entscheidbar}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Charakteristische Funktion}
+\textbf{Definition:\;} Die \wichtig{charakteristische Funktion} $\chi_L : \Sigma^* \rightarrow \{ 0, 1 \}$ und die "`halbe"' charakteristische Funktion $\chi^*_L : \Sigma^* \hookrightarrow \{ 0, 1 \}$ einer Sprache $L \subseteq \Sigma^*$ sind folgendermaßen definiert:
+\begin{eqnarray*}
+    \chi_L(x) &=& \left\{ \begin{array}{l@{\text{ falls }}l}
+    1 & x \in L \\
+    0 & x \notin L \end{array} \right. \\ \\
+    \chi^*_L(x) &=& \left\{ \begin{array}{l@{\text{ falls }}l}
+    1 & x \in L \\
+    \text{undefiniert} & x \notin L \end{array} \right.
+\end{eqnarray*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Entscheidbarkeit und Semi-Entscheidbarkeit}
+\textbf{Definitionen:}
+\begin{itemize}
+    \item Eine Sprache $L$ ist \wichtig{entscheidbar} (rekursiv), wenn die charakteristische Funktion $\chi_L$ Turing-berechenbar ist.
+    \item Eine Sprache $L$ ist \wichtig{semi-entscheidbar}, wenn die "`halbe"' charakteristische Funktion $\chi^*_L$ Turing-berechenbar ist.
+    \item Eine Sprache $L$ ist \wichtig{rekursiv-aufzählbar}, wenn $L$ das Bild einer totalen Turing-berechenbaren Funktion ist.
+\end{itemize}
+
+\textbf{Satz:\;} Eine Sprache $L$ ist genau dann entscheidbar, wenn $L$ und $\overline{L} = \Sigma^* \backslash L$ semi-entscheibar sind. \par \abstand
+\textbf{Beweis ($\Rightarrow$):\;} Da die Sprache $L$ entscheidbar ist, existiert eine charakteristische Funktion $\chi_L = f_M$ für eine Turing-Maschine $M$.
+\begin{itemize}
+    \item Man konstrutiert zwei Turing-Maschinen $M'$ uns $M''$ für $L$ und $\overline{L}$.
+    \item $M'$ bzw. $M''$ arbeiten zuerst wie $M$.
+    \item Sobald $M$ anhält, verhalten sich $M'$ und $M''$ folgendermaßen:
+    \begin{itemize}
+        \item Falls $M$ akzeptiert, dann akzeptiert auch $M'$ (Symbol $1$ auf das Band schreiben) und $M''$ geht in eine Endlosschleife
+        \item Falls $M$ verwirft, dann akzeptiert $M''$ (Symbol $1$ auf das Band schreiben) und $M'$ geht in eine Endlosschleife.
+    \end{itemize}
+\end{itemize}
+Die "`halben"' charakteristischen Funktionen $\chi^*_L$ und $\chi^*_{\overline{L}}$ sind die von den Turing-Maschinen $M'$ und $M''$ berechnete Funktionen:
+\begin{eqnarray*}
+  \chi^*_L &=& f_{M'} \\
+  \chi^*_{\overline{L}} &=& f_{M''}
+\end{eqnarray*}
+\pagebreak
+
+\textbf{Beweis ($\Leftarrow$):\;} Da die Sprachen $L$ und $\overline{L}$ semi-entscheidbar sind, existieren für beide Sprachen die "`halben"' charakteristischen Funktionen $\chi^*_L = f_{M'}$ und $\chi^*_{\overline{L}}~=~f_{M''}$ für die Turing-Maschinen $M'$ und $M''$.
+\begin{itemize}
+    \item Man konstruiert eine 2-Band-Turing-Maschine $M$.
+    \item Die Turing-Maschine $M$ kopiert zuerst die Eingabe auf das zweite Band.
+    \item Anschliend wird die Maschine $M'$ auf dem ersten Band und $M''$ auf dem zweiten Band simuliert.
+    \item Die gesamte Maschine $M$ stoppt, wenn die simulierte Maschine $M'$ oder die simulierte Maschine $M''$ stoppt.
+    \item Falls $M'$ gestoppt hat, dann akzeptiert $M$ (Symbol $1$ auf das Band schreiben); falls $M''$ gestoppt hat, dann verwirft $M$ (Symbol $0$ auf das Band schreiben).
+\end{itemize}
+Die charakteristische Funktion $\chi_L$ ist die von der Turing-Maschine $M$ berechnete Funktion:
+$$ \chi_L = f_M $$
+\abstand
+
+\textbf{Satz:\;} Die Sprache $L$ ist genau dann rekursiv-aufzählbar, wenn $L$ semi-entscheidbar ist. \par \abstand
+\textbf{Beweis ($\Rightarrow$):\;} Die Sprache $L$ ist rekursiv-aufzählbar. Damit ist $L = \text{Im}(f_M)$, wobei $f_M$ eine totale Funktion ist, die von $M$ berechenbar ist. \par \abstand
+Man konstruiert nun eine Maschine $M'$, mit dem Ziel $f_{M'} = \chi^*_L$, denn damit wäre $L$ semi-entscheidbar. \par \abstand
+Die Eingabe für $M'$ sei $w$ und $M'$ soll akzeptieren, wenn $w \in L$.
+\begin{itemize}
+    \item Die Maschine $M'$ generiert nacheinander alle Eingaben $u$ für $M$ ($u \in \{ \varepsilon, 0, 1, 00, 01, 10, 11, \ldots \} $).
+    \item Für jedes von $M'$ generierte $u$, wird über eine Simulation von $M$ der Wert $v = f_M(u)$ berechnet und mit $w$ verglichen:
+    \begin{itemize}
+        \item Ist $v = w$, dann akzeptiert $M'$ und stoppt.
+        \item Ist $v \neq w$, dann wiederholt $M'$ die Berechnung für das nächste $u$.
+    \end{itemize}
+\end{itemize}
+Die "`halbe"' charakteristische Funktion $\chi^*_L$ ist die von der Turing-Maschine $M'$ berechnete Funktion $f_M$, denn die Maschine $M$ hält nur, wenn sie eine Übereinstimmung der Eingabe $w$ mit einem Element $v = f_M(u)$ aus dem Bild $\text{Im}(f_M)$ der totalen Funktion $f_M$ findet. Damit ist $L$ semi-entscheidbar.
+$$ \chi^*_L = f_{M'} $$
+
+\textbf{Beweis ($\Leftarrow$):\;} Die Sprache $L$ ist semi-entscheidbar. Damit existiert eine "`halbe"' charakteristische Funktion $\chi^*_L = f_{M'}$. \par \abstand
+Ziel ist es, eine Maschine $M$ mit der totalen Funktion $f_M$ zu finden, so dass $L = \text{Im}(f_M)$. Die Eingabe für $M$ sei $w$.
+\begin{itemize}
+    \item Man nutzt folgende Bijektion: $\varphi : \nat \rightarrow \nat \times \nat$.
+    \begin{center}\begin{tabular}{r|rrrr}
+      & 0 & 1 & 2 & 3 \\ \hline
+    0 & 0 & 2 & 5 & 9 \\
+    1 & 1 & 4 & 8 & 13 \\
+    2 & 3 & 7 & 12 & 18 \\
+    3 & 6 & 11 & 17 & 24
+    \end{tabular}\end{center}
+    \item Man setzt voraus, dass $L \neq \emptyset$ und dass Maschine $M$ ein Wort $v \in L$ kennt.
+    \item $M$ interpretiet die Eingabe $w \in \Sigma^*$ als $n \in \nat$ und berechnet $\varphi(n) = (n_1, n_2)$.
+    \item $M$ interpretiert $bin(n_1)$ ohne die erste $1$ als Eingabe von $M'$ und simuliert $n_2$ Schritte von $M'$. Durch die Begrenzung der Rechenschritte wird verhindert, dass $M'$ in eine Endlosschleife gerät. Dies ist wichtig, denn die von $M$ berechenbare Funktion muss total sein.
+    \item Hat $M'$ das Wort $bin(n_1)$ in $n_2$ Schritten akzeptiert, dann ist $bin(n_1) \in L$, $M$ gibt $bin(n_1)$ aus und stoppt. Sonst gibt $M$ das bekannte Wort $v$ aus und stoppt.
+\end{itemize}
+Bemerkung: Wenn $bin(n_1)$ in $n_2$ Schritten von $M$ nicht akzeptiert worden ist, heißt es \emph{nicht}, dass $z = bin(n_1)$ nicht in $L$ ist. Für ein größeres $n$ wiederholt sich aufgrund der Definition von $\varphi$ das Wort $z$ mit einem größeren $n_2$, so dass die Zugehörigkeit von $z$ zu $L$ mit mehr Schritten überprüft werden kann. \par \abstand
+Behauptung: Das Bild der von $M$ berechnete Funktion $f_M$ ist $L$: Ist ein Wort $w \in L$, dann liegt es im Bild von $f_M$ und kann von $M$ nach $n$ Wiederholungen akzeptiert werden, wobei $\varphi(n) = (1w, m)$. Die Maschine $M$ braucht $m$ Schritte, um $w$ zu akzeptieren.
+\pagebreak
+
+\textbf{Folgerungen:}
+\begin{itemize}
+    \item Ist $L$ semi-entscheidbar, aber nicht entscheidbar, dann ist $\overline{L}$ nicht semi-entscheindbar.
+    \item $L$ ist genau dann co-semi-entscheidbar, wenn $\overline{L}$ semi-entscheidbar ist.
+\end{itemize}
+\begin{center}
+    \includegraphics{skript/grafiken/formalesprachen}
+\end{center}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Unentscheidbarkeit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Unentscheidbarkeit}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Einleitung}
+Das Ziel ist es zu zeigen, dass es unentscheidbare Sprachen gibt. Das soll mit Hilfe von Diagolanisierung gezeigt werden (wie beim Beweis, dass \emph{keine} Menge $A$ existiert, so dass $|A| = |\pot(A)|$). Dazu wird eine Codierung einer Turing-Maschine als Eingabe für eine Turing-Maschine benutzt.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Codierung von Turing-Maschinen}
+Eine Codierung $\langle M \rangle$ für eine Turing-Maschine $M$ soll folgendermaßen aussehen:
+\begin{itemize}
+    \item Alphabet: $\Sigma = \{ 0, 1 \}$ (o.B.d.A.)
+    \item Zustände: $Q = \{ 1, \ldots n \}$; Startzustand: 1
+    \item Arbeitsalphabet: $\Gamma = \{ a_1, \ldots a_m \}$
+    \item Zustandsübergangsfunktion: $\delta$ ist eine Folge von $n \cdot m$ Befehlssätzen:
+    $$ \# bin(n) \# bin(m) \# bin(k_1) \# bin(k_2) \# \ldots \# bin(k_{n \cdot m}) $$
+    Jedes $k_i$ repräsentiert eine Zuweisung:
+    $$ \delta(p, a_j) = (q, a_k, K) $$
+\end{itemize}
+\textbf{Satz:\;} Die Sprache $C$ aller gültigen Codierungen für Turing-Maschinen ist entscheidbar. \label{codierung}
+$$ C = \{ w \in \{ 0, 1 \}^* \tr \text{$w$ ist gültige Codierung einer TM} \} $$
+\textbf{Beweis:\;} Zuerst muss überprüft werden, ob die Codierung $w$ mit zwei Blöcken beginnt:
+$$\# bin(n) \# bin(m) \#$$
+Ist dies nicht erfüllt, dann wird das Wort $w$ verworfen. \par \abstand
+Ansonsten wird überprüft, ob $m \cdot n$ weitere Blöcke folgen. Wenn dies nicht der Fall ist, wird $w$ verworfen. \par \abstand
+Ansonsten wird jeder einzelne Block auf Korrekkeit geprüft. Wenn alle Blöcke korrekt codiert sind, wird $w$ akzeptiert, sonst wird $w$ verworfen.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Universelle Turing-Maschine}
+\textbf{Satz:\;} Es gibt eine universelle Turing-Maschine $M_U$, die bei einer Eingabe $\langle M \rangle \# w$ die Arbeit von $M$ auf $w$ simuliert. \par \abstand
+\textbf{Beweis:\;} Man konstruiert eine 3-Band-Turing-Maschine:
+\begin{itemize}
+    \item Band 1: Band von $M$
+    \item Band 2: Kopie von $\langle M \rangle$
+    \item Band 3: Hilfsband (aktueller Zustand $q$ von $M$)
+\end{itemize}
+Die Simulation eines Schrittes von $M$ erfolgt folgendermaßen:
+\begin{enumerate}
+    \item Auf Band $3$ steht der Startzustand von $M$.
+    \item $M_U$ liest auf Band $1$ das Symbol $a$ aus $w$.
+    \item Anschließend sucht $M_U$ den Befehlssatz für $\delta(q, a)$ auf Band $2$.
+    \item $M_U$ führt die Anweisung auf Band $1$ aus und schreibt den neuen Zustand~$q'$ auf Band $3$.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Diagonalsprache}
+\textbf{Definition:\;} Eine Turing-Maschine bekommt als Eingabe $w$ ihre eigene Codierung. Dieses Wort $w$ soll sie \emph{nicht} akzeptieren. Die Menge aller Codierungen solcher Turing-Maschinen nennt man \wichtig{Diagonalsprache}.
+$$ D = \{ w \in \{ 0, 1 \}^* \tr w = \langle M \rangle \text{ und $M$ akzeptiert $w$ \emph{nicht}} \} $$
+
+\textbf{Vorstellung:\;} Es wird in einer Tabelle für alle Turing-Maschinen eingetragen, ob sie die Codierung jeder anderen Turing-Maschine oder sich selber akzeptieren oder verwerfen.
+\begin{center}\begin{tabular}{c||c|c|c|c|c}
+  Eingabe $\backslash$ TMs & $M_1$ & $M_2$ & $M_3$ & $M_4$ & $\cdots$ \\ \hline \hline
+  $\langle M_1 \rangle$ & akz. & akz. & verw. & akz. & $\cdots$ \\ \hline
+  $\langle M_2 \rangle$ & akz. & \textbf{verw.} & verw. & verw. & $\cdots$ \\ \hline
+  $\langle M_3 \rangle$ & verw. & akz. & \textbf{verw.} & akz. & $\cdots$ \\ \hline
+  $\langle M_4 \rangle$ & verw. & akz. & akz. & \textbf{verw.} & $\cdots$ \\ \hline
+  $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$
+\end{tabular}\end{center}
+Nun werden nur die Einträge in der Diagonalen betrachtet, in der jeder Turing-Maschine $M_i$ eine Codierung $\langle M_i \rangle$ zugeordnet wird. Alle Codierungen $\langle M_i \rangle$, bei denen $M_i$ die Codierung $\langle M_i \rangle$ verwirft, gehören zur Diagonalsprache $D$. \par \abstand \abstand
+
+\textbf{Satz:\;} Die Diagonalsprache $D$ ist nicht entscheidbar. \par \abstand
+\textbf{Beweis (indirekt):\;} Angenommen $D$ sei entscheidbar, dann existiert eine Turing-Maschine $M_D$, so dass die von ihr berechenbare Funktion $f_{M_D}$ die charakteristische Funktion $\chi_D$ ist. \par \abstand
+Man benutzt nun die Kodierung $\langle M_D \rangle$ als Eingabe für $M_D$:
+\begin{itemize}
+    \item Angenommen $M_D$ akzeptiert ihre Codierung $\langle M_D \rangle$, dann ist nach der Definition von $D$ ihre Codierung $\langle M_D \rangle \notin D$. Da die von $M_D$ berechnete Funktion $f_{M_D} = \chi_D$ die charakteristische Funktion von $D$ ist, ergibt die Berechnung $\chi_D(\langle M_D \rangle) = 0$, was bedeutet, dass $M_D$ die Codierung $\langle M_D \rangle$ \emph{nicht} akzeptiert. Dies ist ein Widerspruch zur Annahme!
+    \item Angenommen $M_D$ akzeptiert ihre Codierung $\langle M_D \rangle$ \emph{nicht}, dann ist nach der Definition von $D$ ihre Codierung $\langle M_D \rangle \in D$. Damit ist $\chi_D(\langle M_D \rangle) = 1$. Also akzeptiert $M_D$ die Codierung $\langle M_D \rangle$. Auch dies ist ein Widerspruch zur Annahme!
+\end{itemize}
+\begin{center}\begin{tabular}{lcl}
+  $M_D$ akzeptiert $\langle M_D \rangle$ & \platz $\Leftrightarrow$ \platz & $\langle M_D \rangle \notin D$ \\
+                                         & \platz $\Leftrightarrow$ \platz & $\chi_D(\langle M_D \rangle) = f_{M_D}(\langle M_D \rangle) \neq 1$ \\
+                                         & \platz $\Leftrightarrow$ \platz & $M_D$ akzeptiert $\langle M_D \rangle$ nicht \\
+                                         &                                 & Widerspruch!
+\end{tabular}\end{center}
+Daraus folgt: $D$ ist nicht entscheidbar.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Spezielles Halteproblem}
+\textbf{Definition:\;} Das \emph{spezielle Halteproblem}\index{spezielles Halteproblem}\index{Halteproblem, speziell} (Selbstanwendungsproblem) ist gegeben durch die Sprache \emph{Hs}:
+$$ \text{\emph{Hs}} = \{ w \in \{ 0, 1 \}^* \tr \text{$M_w$ angesetzt auf $w$ hält} \} $$
+Die Turing-Maschine $M_w$ ist definiert als:
+$$ M_w = \left\{ \begin{array}{ll}
+    M & \text{falls $w = \langle M \rangle$ eine gültige Codierung ist}  \\
+    \hat{M} & \text{sonst}
+  \end{array} \right. $$
+Dabei ist $\hat{M}$ eine beliebige, aber fest gewählte Turing-Maschine. \par \abstand
+\textbf{Satz:\;} Die Sprache \emph{Hs} ist nicht entscheidbar. \par \abstand
+\textbf{Beweisidee:\;} Angenommen \emph{Hs} wäre entscheidbar, dann müsste $D$ auch entscheidbar sein. Dies wäre ein Widerspruch. \par \abstand
+\textbf{Beweis (indirekt):\;} Sei $\chi_{\text{\emph{Hs}}}$ die charakteristische Funktion der Sprache \emph{Hs}, dann konstruiert man eine Turing-Maschine $M_D$, so dass die von $M_D$ berechnete Funktion $f_{M_D}$ die charakteristische Funktion $\chi_D$ der Diagonalsprache $D$ ist. Die Eingabe für $M_D$ sei $w$.
+\begin{enumerate}
+    \item $M_D$ entscheidet, ob $w = \langle M \rangle$ eine gültige Codierung ist (siehe \ref{codierung}).
+    \begin{itemize}
+        \item Wenn ja: $M_D$ fährt fort
+        \item Wenn nein: $M_D$ verwirft
+    \end{itemize}
+    \item $M_D$ nutzt $M_{\text{\emph{Hs}}}$ und entscheidet, ob $M = M_w$ auf $w$ hält
+    \begin{itemize}
+        \item Wenn ja: $M_D$ fährt fort
+        \item Wenn nein: $M_D$ akzeptiert, da die Maschine $M$ sich damit nicht akzeptieren kann und deswegen zu $D$ gehört.
+    \end{itemize}
+    \item $M_D$ nutzt die Universal-Turing-Maschine $T_U$, um die Berechnung von $M = M_w$ bei Eingabe $w$ zu simulieren (es ist nun bekannt, dass $M_w$ bei Eingabe $w$ terminiert).
+    \begin{itemize}
+        \item Wenn $M_w$ die Eingabe $w$ akzeptiert, verwirft $M_D$ die Eingabe.
+        \item Wenn $M_w$ die Eingabe $w$ verwirft, akzeptiert $M_D$ die Eingabe.
+    \end{itemize}
+\end{enumerate}
+Damit existiert eine charakteristische Funktion $\chi_D = f_{M_D}$. Daraus folgt, dass die Diagonalsprache $D$ entscheidbar ist. Dies ist ein Widerspruch! \par \abstand
+Daraus folgt: \emph{Hs} ist \emph{nicht} entscheidbar.
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Reduktion
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reduktionen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Definition der Reduktion}\index{Reduktion}
+\textbf{Definition:\;} Es seien $L_1 \subseteq \Sigma_1^*$ und $L_2 \subseteq \Sigma_2^*$ Sprachen. \par \abstand
+$L_1$ ist reduzierbar auf $L_2$, wenn eine totale berechenbare Funktion $f : \Sigma_1^* \rightarrow \Sigma_2^*$ existiert, so dass für alle $w \in \Sigma_1^*$ gilt:
+$$ w \in L_1 \platz \Leftrightarrow \platz f(w) \in L_2 $$
+Schreibweise:
+$$ L_1 \leq L_2 $$ \abstand
+
+\textbf{Lemma:\;} Ist $L_1 \leq L_2$ und ist $L_2$ entscheidbar (bzw. semi-entscheidbar), dann ist auch $L_1$ entscheidbar (bzw. semi-entscheidbar). \par \abstand
+\textbf{Beweis:\;} Sei $L_1 \leq L_2$ mittels $f$ und $L_2$ sei entscheidbar. Daraus folgt, dass die charakteristische Funktion $\chi_{L_2}$ berechenbar ist. Zu zeigen ist Berechenbarkeit der charakterischen Funktion $\chi_{L_1}$. \par \abstand
+Um zu entscheiden, ob ein Wort $w$ in der Sprache $L_1$ liegt, wird $f(w)$ berechnet und entschieden, ob $f(w)$ in $L_2$ liegt. Wenn dies Fall ist, ist auch $w \in L_1$; wenn nicht, dann ist $w \notin L_2$.
+\begin{eqnarray*}
+    \chi_{L_1} &=& \chi_{L_2} \circ f \\ \\
+    \chi_{L_1}(w) = 1 & \Leftrightarrow & w \in L_1 \\
+                      & \Leftrightarrow & f(w) \in L_2 \\
+                      & \Leftrightarrow & \chi_{L_2}(f(w)) = 1
+\end{eqnarray*}
+Damit ist $\chi_{L_1}$ berechenbar. Daraus folgt, dass $L_1$ entscheidbar ist. \par \abstand
+Für den Beweis für semi-entscheidbare Sprachen ist $\chi_{L_1}$ durch $\chi^*_{L_1}$ und $\chi_{L_2}$ durch $\chi^*_{L_1}$ zu ersetzen.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Allgemeines Halteproblem}
+\textbf{Definition:\;} Das \emph{allgemeine Halteproblem}\index{allgemeine Halteproblem}\index{Halteproblem, allgemein} ist gegeben durch die Sprache $H$:
+$$ H = \{ w\#x \tr \text{$M_w$ angesetzt auf $x$ hält} \} $$
+Die Turing-Maschine $M_w$ ist definiert als:
+$$ M_w = \left\{ \begin{array}{ll}
+    M & \text{falls $w = \langle M \rangle$ eine gültige Codierung ist}  \\
+    \hat{M} & \text{sonst}
+  \end{array} \right. $$
+\textbf{Satz:\;} Die Sprache $H$ ist nicht entscheidbar. \par \abstand
+\textbf{Beweis:\;} Es ist zu zeigen, dass $\text{\emph{Hs}} \leq H$. Wäre $H$ entscheidbar, müsste \emph{Hs} auch entscheidbar sein. Dies wäre ein Widerspruch. \par \abstand
+Gesucht wird eine Funktion $f$ für die Reduktion, so dass $w \in \text{\emph{Hs}} \Leftrightarrow f(w) \in H$. Es wird folgede Zuweisung gewählt:
+$$ f(w) = w\#w $$
+Probe:
+$$ w \in \text{\emph{Hs}} \platz \Leftrightarrow \platz \text{$M_w$ hält auf $w$} \platz \Leftrightarrow \platz w\#w \in H $$
+Damit ist \emph{Hs} auf $H$ reduzierbar. Da aber \emph{Hs} nicht entscheidbar ist, ist auch $H$ nicht entscheidbar.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Halteproblem auf leerem Band}
+\textbf{Definition:\;} Das \wichtig{Halteproblem auf leerem Band} ist gegeben durch die Sprache~$H_0$:
+$$ H_0 = \{ w \tr \text{$M_w$ angesetzt auf $\varepsilon$ hält} \} $$
+\textbf{Satz:\;} Die Sprache $H_0$ ist nicht entscheidbar. \par \abstand
+\textbf{Beweis:\;} Es ist zu zeigen, dass $H \leq H_0$. Wäre $H_0$ entscheidbar, müsste $H$ auch entscheidbar sein. Dies wäre ein Widerspruch. \par \abstand
+Es wird folgende Funktion für die Reduktion gewählt: Man ordnet jedem Wort $w\#x$ eine Turing-Maschine zu, die bei Start auf leerem Band $x$ auf das Band schreibt und sich dann wie $M_w$ verhält. Man bezeichnet mit $f(w\#x)$ die Codierung dieser Maschine.
+\begin{eqnarray*}
+    w\#x \in H &\Leftrightarrow& \text{$M_w$ hält auf $x$} \\
+               &\Leftrightarrow& \text{die durch $f(w\#x)$ beschriebene Maschine hält auf leerem Band} \\
+               &\Leftrightarrow& f(w\#x) \in H_0
+\end{eqnarray*}
+Damit ist $H$ auf $H_0$ reduzierbar. Da aber $H$ nicht entscheidbar ist, ist auch $H_0$ nicht entscheidbar.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Universalsprache}
+\textbf{Definition:\;} Die Universalsprache $U$ ist folgendermaßen definiert:
+$$ U = \{ w\#x \tr \text{$M_w$ angesetzt auf $x$ akzeptiert} \} $$
+Die Turing-Maschine $M_w$ ist folgendermaßen definiert, wobei hier $\hat{M}$ eine Turing-Maschine ist, die immer akzeptiert:
+$$ M_w = \left\{ \begin{array}{ll}
+    M & \text{falls $w = \langle M \rangle$ eine gültige Codierung ist}  \\
+    \hat{M} & \text{sonst}
+  \end{array} \right. $$
+\textbf{Satz:\;} Die Sprache $U$ ist nicht entscheidbar. \par \abstand
+\textbf{Beweis:\;} Es ist zu zeigen, dass $\overline{D} \leq U$ und $\overline{D}$ nicht entscheidbar ist. \par \abstand
+Die Sprache $\overline{D}$ ist nicht entscheidbar, da $D$ nicht entscheidbar ist.
+$$ \overline{D} = \{ w \in \{ 0, 1 \}^* \tr \text{$w \neq \langle M \rangle$ oder ($w = \langle M \rangle$ und $M$ akzeptiert $w$)} \} $$
+Es wird folgende Funktion für die Reduktion gewählt:
+$$ f(w) = w\#w $$
+Probe:
+\begin{eqnarray*}
+    w \in \overline{D} &\Leftrightarrow& \text{$w \neq \langle M \rangle$ oder ($w = \langle M \rangle$ und $M$ akzeptiert $w$)} \\
+                       &\Leftrightarrow& \text{$M_w = \hat{M}$ oder $M_w = M$ und $M_w$ akzeptiert $w$} \\
+                       &\Leftrightarrow& \text{$M_w$ akzeptiert $w$ (da $\hat{M}$ alles akzeptiert)} \\
+                       &\Leftrightarrow& w\#w \in U
+\end{eqnarray*}
+Damit ist $\overline{D}$ auf $U$ reduzierbar. Da aber $\overline{D}$ nicht entscheidbar ist, ist auch $U$ nicht entscheidbar. \par \abstand \abstand
+\pagebreak
+
+\textbf{Satz:\;} Die Universalsprache $U$ ist semi-entscheidbar. \par \abstand
+\textbf{Beweis:\;} Es existiert eine Turingmaschine $M$, so dass die von $M$ berechnete Funktion $f_{M}$ die "`halbe"' charakteristische Funktion $\chi^*_U$ der Universalsprache $U$ ist:
+\begin{enumerate}
+    \item Die Maschine $M$ überprüft zuerst, ob die Eingabe die Form $w\#x$ hat
+    \begin{itemize}
+        \item Wenn ja: $M$ fährt fort
+        \item Wenn nein: $M$ geht in eine Endlosschleife
+    \end{itemize}
+    \item $M$ simuliert $M_w$ mit der Eingabe $x$
+    \item Falls $M_w$ hält, wird geprüft, ob $M_w$ das Wort $x$ akzeptiert hat
+    \begin{itemize}
+        \item Wenn ja: $M$ akzeptiert die Eingabe $w\#x$
+        \item Wenn nein: $M$ geht in eine Endlosschleife
+    \end{itemize}
+    \item Hinweis: Sollte $M_w$ nicht halten, kann $M$ auch nicht halten.
+\end{enumerate}
+\abstand
+
+\textbf{Satz:\;} Die Sprache $\overline{U}$ ist \emph{nicht} semi-entscheidbar. \par \abstand
+\textbf{Beweis (indirekt):\;} Angenommen $\overline{U}$ ist semi-entscheidbar. Da $U$ semi-entscheidbar ist, würde aus der Semi-Entscheidbarkeit von $U$ und $\overline{U}$ folgen, dass $U$ entscheidbar ist. Dies wäre ein Widerspruch.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Postsches Korrespondenzproblem}
+\textbf{Definition:\;} Das \emph{Postsche Korrespodenzproblem}\index{Postsches Korrespodenzproblem} ist gegeben durch die Sprache~\emph{PCP}\index{PCP}:
+$$ \text{\emph{PCP}} = \{ (u_1, v_1), \ldots (u_k, v_k) \tr \exists i_1 \ldots i_n \platz u_{i_1} \circ \ldots \circ u_{i_n} = v_{i_1} \circ \ldots \circ v_{i_n} \} $$
+\begin{eqnarray*}
+    & \vdots & \\
+    & \vdots & \\
+    & \vdots & \\
+    & \text{Vorlesung vom 12.6.2002 (fehlt)} & \\
+    & \vdots & \\
+    & \vdots & \\
+    & \vdots &
+\end{eqnarray*}

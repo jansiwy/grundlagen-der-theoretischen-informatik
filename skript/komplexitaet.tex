@@ -1,0 +1,208 @@
+\chapter{Komplexität}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Die Komplexitätsklasse P
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Die Komplexitätsklasse $\bigP$}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Komplexitätsklassen}
+\textbf{Definition:\;} Ist $M$ eine Turing-Maschine und $w \in \Sigma^*$, dann bezeichnet $\stime_M(w)$ die Anzahl der Schritte die $M$ bei der Eingabe $w$ macht:
+$$ \stime_M : \Sigma^* \rightarrow \nat \cup \{ \infty \} $$
+\textbf{Definition:\;} Sei $f : \nat \rightarrow \nat$ eine Funktion. Die \wichtig{Komplexitätsklasse} $\btime(f(n))$ besteht aus allen Sprachen $L$, für die eine Mehrband-Turing-Maschine $M$ existiert, mit der Eigenschaft $L = L(M)$ und die Anzahl der Schritte $\stime_M(w)$, die $M$ bei der Eingabe $w$ macht, ist kleiner oder gleich $f(|w|)$ für alle $w \in \Sigma^*$. Insbesondere gilt, dass $M$ immer hält.
+\begin{eqnarray*}
+    \btime(f(n)) &=& \{ L \subseteq \Sigma^* \tr \text{$\exists$ TM $M$ mit $L(M) = L$ und } \\
+                 & & \text{ $\forall w \in \Sigma^* \; \stime_M(w) \leq f(|w|)$} \}
+\end{eqnarray*}
+
+\textbf{Beispiel:\;} Die Nachfolgerfunktion $s : \nat \rightarrow \nat$ ist folgendermaßen definiert:
+$$ s(n) = n + 1 $$
+Alle regulären Sprachen $L_{\text{regulär}}$ liegen in der Komplexitätsklasse $\btime(s(n))$. \par \abstand \abstand
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Polynomialzeitprobleme}
+\textbf{Definition:\;} Die Komplexitätsklasse $\bigP$ der "`Polynomialzeitprobleme"' ist folgendermaßen definiert:
+\begin{eqnarray*}
+    \bigP &=& \{ L \tr \text{$\exists$ TM $M$ \; $\exists$ Polynom $p(n)$} \\
+          & & \text{ mit $L = L(M)$ und $\forall w \in \Sigma^* \; \stime_M(w) \leq p(|w|)$} \} \\ \\
+    \bigP &=& \bigcup_{p(n) \text{ Poylnom}} \btime(p(n)) \\ \\
+    L \in \bigP &\Leftrightarrow& \text{$\exists$ TM $M$ \; $\exists k \in \nat$ \; $\forall w \in \Sigma^*$ \; $L = L(M)$ \; $\stime_M(w) = \bigO(|w|^k)$}
+\end{eqnarray*}
+Die Klasse $\bigP$ stimmt mit der Klasse der in Polynomialzeit entscheidbaren Probleme auf Registermaschinen überein, wenn alle Operationen mit logarithmischem Kostenmaß angerechnet werden (d.h. Kosten für eine Zuweisung, Addition etc. sind gleich der Anzahl der beteiligten Bits). \par \abstand
+
+\textbf{Erweiterte Church'sche These:\;} Die Klasse $\bigP$ ist die Klasse der effizient berechenbaren Probleme. \par \abstand
+
+\textbf{Konsequenz:\;} Zum Nachweis, dass $L \in \bigP$, reicht es aus, die Algorithmen (Pseudocode, Flussdiagramme etc.) zu analysieren. \par \abstand
+
+\textbf{Beispiele:\;} Folgende Sprachen liegen in $\bigP$:
+\begin{itemize}
+    \item $\{ p(x)\#n \tr \text{$p(x)$ ist rationales Polynom, $n \in \nat$ und $p(n) = 0$} \}$ \par
+    Begründung: Horner-Schema
+    \item $\{ \langle \text{lineares Gleichungssystem} \rangle \tr \text{das System hat eine Lösung} \}$ \par
+    Begründung: Gauss-Elimination
+    \item $\{ bin(a)\#bin(b)\#bin(c) \tr \text{$a, b, c, \in \nat$ und $ggT(a, b) = c$} \}$ \par
+    Begründung: Euklidischer Algorithmus
+    \item $\{ \langle G \rangle \tr \text{Graph $G$ ist zusammenhängend} \}$ \par
+    Begründung: Tiefensuche (DFS) bzw. Breitensuche (BFS)
+\end{itemize}
+
+\textbf{Beispiele:\;} Von folgenden Problemen ist nicht bekannt, ob sie in $\bigP$ liegen (wahrscheinlich nicht):
+\begin{itemize}
+    \item $\text{\emph{HAM}} = \{ \langle G \rangle \tr \text{$G$ hat einen Hamilton-Kreis} \}$ \par
+    Bemerkung: Ein Hamilton-Kreis ist ein Kreis, der jeden Knoten genau einmal besucht.
+    \item $\text{\emph{PRIME}} = \{ bin(n) \tr \text{$n$ ist eine Primzahl} \}$
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Die Komplexitätsklasse NP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Die Komplexitätsklasse $\bigNP$}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Nichtdeterministische Turing-Maschinen}
+\textbf{Hinweis:\;} Die bisherige Definition von Turing-Maschinen war deterministisch. Das heißt, jede Konfiguration hat eine eindeutige (oder keine) Nachfolgekonfiguration. \par \abstand
+
+\textbf{Definition:\;} Eine \wichtig{nichtdeterministische Turing-Maschine}\index{Turing-Maschine, nichtdeterministisch} (kurz: \wichtig{NTM}) ist ein 7-Tupel:
+$$ M = (Q, \Sigma, \Gamma, \delta, q_0, \Box, F) $$
+Alle Komponenten bis auf $\delta$ sind wie bei der deterministischer Turing-Maschine.
+\begin{itemize}
+    \item $\delta$: Zustandsüberführungsfunktion
+    $$ \delta : Q \times \Gamma \rightarrow \pot(Q \times \Gamma \times \{ L, R, N \}) $$
+    Falls $\delta(q, a) = \emptyset$, stoppt die Turing-Maschine. \par
+    Endkonfigurationen sind immer akzeptierend oder verwerfend.
+\end{itemize}
+
+\textbf{Definition:\;} Eine nichtdeterministische Turing-Maschine $M$ akzeptiert eine Eingabe $w$ genau dann, wenn im Baum der Folgekonfigurationen mindestens ein Weg von der Startkonfiguration $\varepsilon q_0 w$ zu einer akzeptierenden Endkonfiguration führt. Die akzeptierenden Wörter bilden die Sprache $L(M)$. \par \abstand
+\begin{center}
+    \includegraphics{skript/grafiken/ntm}
+\end{center}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Komplexitätsklassen}
+\textbf{Definition:\;} Für jede nichtdeterministische Turing-Maschine $M$ existiert die Funktion $\sntime_M$:
+$$ \sntime_M(w) = \left\{ \begin{array}{ccl}
+  \begin{array}{l}
+    \text{Minimale Weglänge von $\varepsilon q_0 w$} \\
+    \text{zu einer akzeptierenden Endkonfiguration}
+  \end{array} & \text{ falls } & w \in L(M) \\ \\
+  0 & \text{ falls } & w \notin L(M)
+\end{array} \right. $$
+
+\textbf{Definition:\;} Sei $f : \nat \rightarrow \nat$ eine Funktion. Die Komplexitätsklasse $\bntime(f(n))$ besteht aus allen Sprachen $L$, für die eine nichtdeterministische Mehrband-Turing-Maschine $M$ existiert, mit der Eigenschaft $L = L(M)$ und die minimale Anzahl der Schritte $\sntime_M(w)$ von der Startkonfiguration $\varepsilon q_0 w$ zu einer akzeptierenden Endkonfiguration, ist kleiner oder gleich $f(|w|)$ für alle $w \in \Sigma^*$.
+\begin{eqnarray*}
+    \bntime(f(n)) &=& \{ L \subseteq \Sigma^* \tr \text{$\exists$ NTM $M$ mit $L(M) = L$} \\
+                  & & \text{ und $\forall w \in \Sigma^* \; \sntime_M(w) \leq f(|w|)$} \}
+\end{eqnarray*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Effizient verifizierbare Probleme}
+\textbf{Definition:\;} Die Komplexitätsklasse $\bigNP$ der effizient (in Polynomialzeit) verfizierbaren Probleme ist folgendermaßen definiert:
+$$ \bigNP = \bigcup_{p(n) \text{ Poylnome}} \bntime(p(n)) $$
+\begin{center}
+    \includegraphics{skript/grafiken/ratenverifizieren}
+\end{center}
+\pagebreak
+
+\textbf{Beispiele:\;} Folgende Sprachen liegen in $\bigNP$:
+\begin{itemize}
+    \item Alle Sprachen $L \in \bigP$ \par
+    Begründung: $\bigP \subseteq \bigNP$
+    \item $\text{\emph{COMPOSITE}} = \{ bin(n) \tr \text{$n > 1$ und $n$ ist keine Primzahl} \}$ \par
+    Bemerkung: Test auf zusammengesetzte Zahlen \par
+    \begin{itemize}
+        \item $M$ rät $bin(k)$ und $bin(l)$ wobei $1 < |bin(k)|, |bin(l)| \leq |bin(n)|$.
+        \item $M$ prüft, ob $k \cdot l = n$ ($bin(n)$ ist Eingabe) in $c \cdot |bin(n)|^2$ Zeit.
+        \begin{itemize}
+            \item[--] Wenn ja: $M$ akzeptiert
+            \item[--] Wenn nein: $M$ geht in eine Endlosschleife
+        \end{itemize}
+    \end{itemize}
+    \item $\text{\emph{HAM}} = \{ \langle G \rangle \tr \text{$G$ hat einen Hamilton-Kreis} \}$ \par
+    \begin{itemize}
+        \item $M$ rät eine Permutation der Knoten von $G$.
+        \item $M$ prüft, ob die Permutation einen Kreis in $G$ beschreibt.
+        \begin{itemize}
+            \item[--] Wenn ja: $M$ akzeptiert
+            \item[--] Wenn nein: $M$ geht in eine Endlosschleife
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+Bemerkung:\; Das Raten erfolgt bitweise, d.h. die Maschine schreibt eine zufällige Anzahl zufälliger Bits auf ein Band und überprüft dann beispielsweise, ob die geratene Bitfolge eine Permutation repräsentiert.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NP-Vollständigkeit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{$\bigNP$-Vollständigkeit}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Polynomiale Reduktion}
+\textbf{Definition:\;} Eine Sprache $L_1 \subseteq \Sigma^*$ ist auf $L_2 \subseteq \Gamma^*$ polynomial reduzierbar, falls eine totale von einer Polynomialzeit-beschränkten deterministischen Turing-Maschine berechenbare Funktion $f : \Sigma^* \rightarrow \Gamma^*$ existiert, so dass
+$$ w \in L_1 \platz \Leftrightarrow \platz f(w) \in L_2 $$
+Schreibweise:
+$$L_1 \leq_{\bigP} L_2$$
+\abstand
+
+\textbf{Satz:\;} Ist $L_1 \leq_{\bigP} L_2$ und $L_2 \in \bigP$, dann ist $L_1 \in \bigP$. \par \abstand
+\textbf{Beweis:\;} Es sei $w \in \Sigma^*$ und $|w| = n$.
+\begin{itemize}
+    \item Bestimme $f(w)$ in $p(n)$ Schritten
+    $$ \Rightarrow |f(w)| \leq p(n) $$
+    \item Prüfe, ob $f(w) \in L_2$ in $q(p(n))$ Zeit.
+    $$ \Rightarrow \text{Polynomialzeit} $$
+    $f(w) \in L_2 \platz \Leftrightarrow \platz w \in L_1$
+\end{itemize}
+\textbf{Folgerung:\;} Ist $L_1 \leq L_2$ und $L_1 \notin \bigP$, dann ist $L_2 \notin \bigP$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{$\bigNP$-vollständige Probleme}
+\textbf{Definition:\;} Eine Sprache $L$ ist $\bigNP$-schwer (auch: $\bigNP$-hart), falls für alle $L' \in \bigNP$ gilt, dass $L' \leq_{\bigP} L$. \par \abstand
+\textbf{Definition:\;} $L$ ist $\bigNP$-vollständig, falls $L$ $\bigNP$-schwer und $L \in \bigNP$. \par \abstand
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\emph{SAT}-Erfüllbarkeitsproblem}
+\textbf{Definition:\;} Das \wichtig{Erfüllbarkeitsproblem für Formeln der Aussagenlogik} ist gegeben durch die Sprache \emph{SAT}\index{SAT} ($F$ ist eine Codierung einer Formel):
+$$ \text{\emph{SAT}} = \{ \langle F \rangle \in \Gamma^* \tr \text{$F$ ist erfüllbar} \} $$
+
+\textbf{Satz:\;} Die Sprache \emph{SAT} liegt in $\bigNP$. \par \abstand
+
+\textbf{Beispiel:}
+$$ F = (x_1 \lor x_2) \land (\neg x_1 \lor x_2) \land (\neg x_1 \lor x_2) $$
+Hinweis:\; $F$ ist erfüllbar durch $x_1 = 0$ und $x_2 = 1$. \par \abstand
+Vorgehen:
+\begin{itemize}
+    \item $M$ rät eine Belegung der Variablen in $F$.
+    \item $M$ berechnet den Wert von $F$ unter dieser Belegung.
+    \begin{itemize}
+        \item Wenn der Wert 1 ist: $M$ akzeptiert
+        \item Wenn der Wert 0 ist: $M$ geht in eine Endlosschleife
+    \end{itemize}
+\end{itemize}
+\abstand
+
+\textbf{Satz (Cook / Levin):\;} Das Erfüllbarkeitsproblem für Formeln der Aussagenlogik \emph{SAT} ist $\bigNP$-vollständig. \par \abstand
+\textbf{Beweis:}
+\begin{enumerate}
+    \item Es ist zu zeigen, dass \emph{SAT} $\bigNP$-schwer ist, d.h. für beliebiges $L \in \bigNP$ gilt $L \leq_{\bigP} \text{\emph{SAT}}$, d.h. es gilt eine totale in Polynomialzeit berechenbare Funktion $f : \Sigma^* \rightarrow \Gamma^*$, so dass $w \in L \platz \Leftrightarrow \platz f(w) \in \text{\emph{SAT}}$.
+    \item Idee: $L \in \nat \bigP$, d.h. $\exists \; \text{NTM } M$
+    \begin{itemize}
+        \item $L = L(M)$
+        \item $M$ ist Polynomialzeit-beschränkt
+        $$ w = a_1, a_2, \ldots a_n \platz \text{Eingabe für $M$} $$
+        $$ w \in L \platz \Leftrightarrow \platz \text{$M$ erreicht einen akzeptiereden Endzustand bei Eingabe $w$} $$
+        Codiere Berechnung von $M$ auf $w$ durch Formel, die genau dann erfüllbar ist, wenn $M$ akzeptierende Endkofiguration erreichen kann. \par \abstand
+        Vereinfachung: $Q = \{ q_0, q_1 \ldots q_k \}$ \par \abstand
+        $M$ akzeptiert durch einen akzeptierenden Endzustand $q_{\text{\tiny accept}} \in Q$ (nicht mit $1$ auf Band).
+    \end{itemize}
+\end{enumerate}
+\pagebreak
+
+\begin{eqnarray*}
+    & \vdots & \\
+    & \vdots & \\
+    & \vdots & \\
+    & \text{Vorlesung vom 21.6.2002 (fehlt)} & \\
+    & \vdots & \\
+    & \vdots & \\
+    & \vdots &
+\end{eqnarray*}

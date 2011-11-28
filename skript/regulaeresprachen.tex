@@ -1,0 +1,494 @@
+\chapter{Reguläre Sprachen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Formale Sprachen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Formale Sprachen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Alphabet}
+\textbf{Definition:\;} Ein \emph{endliches Alphabet}\index{Alphabet endlich} ist eine Menge von Symbolen. Alphabete werden häufig mit $\Sigma$ oder $\Gamma$ bezeichnet. \par \abstand
+\textbf{Beispiel:\; } $\Sigma = \{0, 1\}$, $\Gamma = \{a, b, c, \ldots z\}$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Wort}
+\textbf{Definition:\;} Ein \wichtig{Wort} (String) über $\Sigma$ ist eine endliche Folge von Symbolen aus~$\Sigma$, wobei Wiederholungen erlaubt sind. Das \emph{leere Wort}~$\varepsilon$ ($\varepsilon \not\in \Sigma$) besteht aus null Symbolen. Die Länge des Wortes $|w|$ ist die Anzahl der Symbole in $w$. \par \abstand
+\textbf{Beispiel:\;} $w_1 = 01101$, $w_2 = abracadabra$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Wortmengen}
+Um die Menge von Wörtern, die sich aus einem Alphabet bilden lassen, darzustellen, wird folgende Notation vereinbart:
+\begin{eqnarray*}
+    \Sigma^0 &=& \{ \varepsilon \} \\
+    \Sigma^1 &=& \Sigma \\
+    \Sigma^{k+1} &=& \{ wa \tr w \in \Sigma^k \wedge a \in \Sigma \} \\
+    \Sigma^* &=& \bigcup_{n=0}^\infty \Sigma^n \platz \text{(Menge aller Wörter über $\Sigma$)} \\
+    \Sigma^+ &=& \bigcup_{n=1}^\infty \Sigma^n \platz \text{(Menge aller Wörter über $\Sigma$ ohne das leere Wort)}
+\end{eqnarray*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Konkatenation}
+\textbf{Definition:\;} Die Operation der \wichtig{Konkatenation} in $\Sigma^*$ verbindet zwei Wörter. Das Wort $w$ konkateniert mit dem Wort $w'$ ist $ww'$. $\Sigma^*$ mit der Konkatenation ist ein Monoid. \par \abstand
+Für die Konkatenation gleicher Wörtern wird folgede Nolation vereinbart:
+\begin{eqnarray*}
+    w^0 &=& \varepsilon \\
+    w^1 &=& w \\
+    w^{k+1} &=& ww^k \\ \\
+    |w^k| &=& k \cdot |w|
+\end{eqnarray*}
+\textbf{Beispiel:\;} $1011$ konkateniert mit $011$ ist $1011011$. \par \abstand
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Formale Sprachen}
+\textbf{Definition:\;} Eine Untermenge $L \subseteq \Sigma^*$ wird \emph{formale Sprache}\index{Sprache, formal} über $\Sigma$ genannt. \par \abstand
+\textbf{Definition:\;} Die folgenden Operationen auf Sprachen nennt man \wichtig{regulär}:
+\begin{enumerate}
+    \item Vereinigung: $A \cup B = \{w \tr w \in A \vee w \in B\}$
+    \item Konkatenation: $A \circ B = \{ww' \tr w \in A \wedge w' \in B\}$
+    \item Stern: $A^* = \{w_1 w_2 \ldots w_k \tr k \in \nat, w_i \in A\}$
+\end{enumerate}
+\seite
+\textbf{Beispiele:}
+\begin{eqnarray*}
+    A &=& \{\text{good}, \text{bad}\} \\
+    B &=& \{\text{girl}, \text{boy}\} \\
+    A \cup B &=& \{\text{good}, \text{bad}, \text{girl}, \text{boy}\} \\
+    A \circ B &=& \{\text{goodgirl}, \text{badgirl}, \text{goodboy}, \text{badboy}\} \\
+    A^* &=& \{\varepsilon, \text{good}, \text{bad}, \text{goodgood}, \text{goodbad}, \text{badgood}, \text{badbad}, \text{goodgoodgood}, \ldots \}
+\end{eqnarray*}
+\pagebreak
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Endliche Automaten
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Endliche Automaten}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Deterministische Automaten}
+\textbf{Definition:\;} Ein \wichtig{deterministischer endlicher Automat} (deterministic finite automaton, kurz \wichtig{DFA}) $M$ ist ein 5-Tupel:
+$$ M = (Q, \Sigma, \delta, q_0, F) $$
+\begin{itemize}
+    \item $Q$: endliche Menge von Zuständen
+    \item $\Sigma$: Eingabealphabet
+    \item $\delta$: Zustandsüberführungsfunktion ($Q \times \Sigma \rightarrow Q$)
+    \item $q_0 \in Q$: Anfangszustand
+    \item $F$: Menge der akzeptierenden Zustände
+\end{itemize}
+Ein DFA kann als gerichteter Graph dargestellt werden: \label{DFA1}
+\begin{center}
+    \includegraphics{skript/grafiken/dfa1}
+\end{center}
+Für jedes $q \in Q$ und $a \in \Sigma$ gibt es genau eine Kante von $q$ mit dem Wert $a$.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Akzeptierte Sprachen von DFAs}
+Um Berechnungen durchführen zu können, wird die Zustandüberführungsfunktion $\delta$ induktiv erweitert, so dass sie Wörter verarbeiten kann.
+\begin{eqnarray*}
+    \hat{\delta} & : & Q \times \Sigma^* \rightarrow Q \\
+    \hat{\delta}(q,\varepsilon) &=& q \\
+    \hat{\delta}(q,aw) &=& \hat{\delta}(\delta(q,a),w)
+\end{eqnarray*}
+\textbf{Definition:\;} Ein Wort $w \in \Sigma^*$ wird genau dann akzeptiert, wenn $\hat{\delta}(q_0,w) \in F$. \par \abstand
+\textbf{Definition:\;} Die Menge aller akzeptierten Wörter bildet die \wichtig{akzeptierte Sprache} des Automaten:
+$$ L(M) = \{w \in \Sigma^* \tr \hat{\delta}(q,w) \in F \} $$
+\textbf{Beispiel:\;} Die akzeptierte Sprache des Automanten im Abschnitt~\ref{DFA1} lautet:
+$$ L(M) = \{ w \tr w \in \{0,1\}^*, |w|=3k+2, k \in \nat \} $$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{"`Sackgassen"'-Prinzip}
+Entwurf eines Automaten, der alle alterierenden 01-Folgen akzeptiert. \par \abstand
+\begin{center}
+    \includegraphics{skript/grafiken/dfaalterier}
+\end{center}
+Das "`Sackgassen"'-Prinzips beruht darauf, dass ein Zustand existiert, bei dem die Zustandsübergangsfunktion für alle Eingaben wieder denselben Zustand liefert. Dies ist nützlich, wenn ab einer bestimmten Stelle im Wort bekannt ist, dass dieses Wort mit Sicherheit akzeptiert bzw. nicht akzeptiert werden soll.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Äquivalenz}
+\textbf{Definition:\;} Zwei Automaten $M$ und $M'$ sind \emph{äquivalent}\index{Äquivalenz} wenn deren Sprachen $L(M)$ und $L(M')$ gleich sind. \par \abstand
+\textbf{Beispiel:\;} Der folgende Automat ist äquivalent zum Automaten im Abschnitt~\ref{DFA1}, da er der gleiche Sprache akzeptiert.
+\begin{center}
+    \includegraphics{skript/grafiken/dfa2}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Vereinigung von DFA-Sprachen}\label{dfaverein}
+\textbf{Satz:\;} Sind $A$ und $B$ DFA-Sprachen, dann ist auch $A \cup B$ auch DFA-Sprache. \par \abstand
+
+\textbf{Beweis:\;} Beide Automaten sollen parallel arbeiten. Es sollen alle Wörter akzeptiert werden, welche der erste \emph{oder} der zweite Automat akzeptiert. Dazu bildet man das kartisiches Produkt der Zustandsmengen von $M_1$ und $M_2$.
+\begin{eqnarray*}
+    \delta &:& ((Q_{M_1}, Q_{M_2}), \Sigma) \rightarrow (Q_{M_1}, Q_{M_2}) \\
+    \delta((q_{M_1}, q_{M_2}), a) &=& (\delta_{M_1}(q_{M_1},a), \delta_{M_2}(q_{M_2}, a) ) \\
+    F &=& \{ (q_{M_1}, q_{M_2}) \tr q_{M_1} \in F_{M_1} \; \vee \; q_{M_2} \in F_{M_2} \} \\
+    L(M) &=& A \cup B
+\end{eqnarray*}
+\pagebreak
+
+\textbf{Beispiel:\;} Es sind gegeben die beiden folgenden Automaten $M_1$ und $M_2$ mit den Sprachen $A$ und $B$.
+\begin{eqnarray*}
+    A = L(M_1) &=& \{ (01)^k \tr k \in \nat \} = (01)^* \\
+    B = L(M_2) &=& \{ (10)^k \tr k \in \nat \} = (10)^*
+\end{eqnarray*}
+\begin{center}
+    \includegraphics{skript/grafiken/dfavereinigung1}\label{Vereinigung}
+\end{center}
+Die Vereinigung der beiden Sprachen $A$ und $B$ lautet:
+$$A \cup B = \{ w \tr w \in (01)^* \vee w \in (10)^* \}$$
+\begin{center}
+    \includegraphics{skript/grafiken/dfavereinigung2}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Nichtdeterministische Automaten}
+
+\textbf{Definition:\;} Ein \wichtig{nichtdeterministischer endlicher Automat} (nondeterministic finite automaton, kurz \wichtig{NFA}) $M$ ist ein 5-Tupel:
+$$ M = (Q, \Sigma, \delta, q_0, F) $$
+\begin{itemize}
+    \item $Q$: Menge von Zuständen
+    \item $\Sigma$: endliches Eingabealphabet
+    \item $\delta$: Zustandsüberführungsfunktion ($Q \times \Sigma \rightarrow \pot(Q)$)
+    \item $q_0$: Anfangszustand
+    \item $F$: Menge der akzeptierenden Zustände
+\end{itemize}
+\seite
+
+\textbf{Beispiel:\;} Dieser NFA akzeptiert alle Wörter, deren vorletztes Symbol $1$ ist.
+\begin{center}
+    \includegraphics{skript/grafiken/nfavorletzte1} \label{NFA1}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Akzeptierte Sprachen von NFAs}
+Um eine Berechnungen durchführen zu können, wird die Zustandüberführungsfunktion $\delta$ erweitert, so dass sie Wörter verarbeiten kann.
+\begin{eqnarray*}
+    \hat{\delta} &:& \pot(Q) \times \Sigma^* \rightarrow \pot(Q) \\
+    \hat{\delta}(S, \varepsilon) &=& S \\
+    \hat{\delta}(S, aw) &=& \hat{\delta} \left( \bigcup_{q \in S} \delta(q, a), w \right)
+\end{eqnarray*}
+\textbf{Definition:\;} Ein Wort $w \in \Sigma^*$ wird von $M$ genau dann akzeptiert, wenn es mindestens einen Berechnungszweig für $w$ gibt, der von $q_0$ zu einem $q \in F$ führt.
+$$ \hat{\delta}\left( \{q_0\}, w \right) \cap F \neq \emptyset $$
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simulation eines NFA durch einen DFA}
+\textbf{Satz:\;} Jeder NFA kann durch einen äquivalenten DFA \emph{simuliert}\index{Simulation eines NFA} werden. \par \abstand
+
+\textbf{Beweis:\;} Die Zustände des DFA $M'$ werden repräsentiert durch alle Teilmengen der Zustandsmenge von des NFA $M$.
+\begin{eqnarray*}
+    M = (Q, \Sigma, \delta, q_0, F) & \Rightarrow & M' = (\pot(Q), \Sigma, \delta', \{q_0\}, F') \\ \\
+    & & \delta'(S, a) = \bigcup_{q \in S} \delta(q, a) \\ \\
+    & & F' = \{S \in \pot(Q) \tr S \cap F \neq \emptyset \} \\ \\
+    L(M) &=& L(M')
+\end{eqnarray*}
+\seite
+
+\textbf{Beispiel:\;} Der folgende DFA ist äquivalent zum NFA im Abschnitt~\ref{NFA1}.
+\begin{center}
+    \includegraphics{skript/grafiken/nfavorletzte2} \label{NFA2}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{$\varepsilon$-Übergänge}
+\textbf{Definition:\;} $M$ ist ein NFA mit \emph{$\varepsilon$-Übergängen}\index{$\varepsilon$-Übergänge}, wenn die Zustandsübergangsfunktion $\delta$ auch "`spontane"' Zustandübergänge (also Zustandübergänge ohne Verarbeitung eines Symbols $a$ aus $\Sigma$) zulässt:
+$$\delta \; : \; Q \times (\Sigma \cup \{ \varepsilon \})~\Rightarrow~\pot(Q)$$
+$M$ akzeptiert eine Eingabe $w \in \Sigma^*$, wenn es einen Zweig der Berechnung gibt, der von $q_0$ zu einem akzeptierenden Zustand führt, dessen konkatenierte Berechnung~$w$ ist. \par \abstand
+\textbf{Anwendung:\;} Konkatenation der Sprachen von $M_1$ und $M_2$ aus Abschnitt \ref{Vereinigung}.
+\begin{center}
+    \includegraphics{skript/grafiken/nfaepsilonKonkat1}
+\end{center}
+\textbf{Satz:\;} Jeder NFA $M$ mit $\varepsilon$-Übergängen kann durch einen NFA $M'$ ohne $\varepsilon$-Übergänge simuliert werden. $Q$, $\Sigma$, $q_0$ und $F$ bleiben dabei gleich, jedoch muss die Zustandsübergangsfunktion angepasst werden:
+$$ \delta'(q, a) = \bigcup_{i, j \in \nat} \hat{\delta}(q, \varepsilon^i a \varepsilon^j) \platz \platz \platz \text{(für $i, j \in \nat$)} $$
+Ausnahme: Falls der Automat mit $\varepsilon$-Übergängen das leere Wort $\varepsilon$ akzeptiert, dann muss die Menge der akzeptierenden Zustände um den Startzustand $q_0$ erweitert werden.
+$$ \delta (q_0, \varepsilon) \cap F \neq \emptyset \platz \Rightarrow \platz q_0 \in F' $$
+\pagebreak
+
+\textbf{Beispiel:\;} Auflösung der $\varepsilon$-Übergänge
+\begin{center}
+    \includegraphics{skript/grafiken/nfaepsilonKonkat2}
+\end{center}
+
+\subsection{Konkatenation und Stern von DFA-Sprachen}\label{dfakonkat}
+\textbf{Satz:\;} DFA-Sprachen sind abgeschlossen gegenüber der Konkatenation und dem~Stern. \par \abstand
+\textbf{Beweis:\;} $M_1$ ist DFA für $A$ und $M_2$ ist DFA für $B$.
+\begin{itemize}
+    \item Schritt 1: Konstruktionen von NFAs mit $\varepsilon$-Übergängen für $A \circ B$ und $A^*$.
+    \begin{itemize}
+        \item $M^{\circ}$ für $A \circ B$
+        \begin{itemize}
+            \item disjukte Vereinigung der Zustandsmengen von $M_1$ und $M_2$
+            \item für jedes $q \in F_{M_1}$ ein $\varepsilon$-Übergang nach $q_{0,M_2}$
+            \item $F_{M^{\circ}} = F_{M_1}$
+            \item $q_{0, M^{\circ}} = q_{0, M_1}$
+        \end{itemize}
+        \begin{center}
+            \includegraphics{skript/grafiken/dfakonkat}
+        \end{center}
+        \seite
+        \item $M^*$ für $A^*$
+        \begin{itemize}
+            \item Zustandsmenge von $M_1$ und neuer Startzustand $q_{-1}$
+            \item $\varepsilon$-Übergang von $q_{-1}$ nach $q_0$
+            \item für jedes $q \in F_{M_1}$ ein $\varepsilon$-Übergang nach $q_0$
+        \end{itemize}
+        \begin{center}
+            \includegraphics{skript/grafiken/dfastern}
+        \end{center}
+    \end{itemize}
+    \item Schritt 2: Umwandlung der NFAs mit $\varepsilon$-Übergängen in äquivalente NFAs ohne~$\varepsilon$-Übergänge
+    \item Schritt 3: Umwandlung der NFAs ohne $\varepsilon$-Übergänge in äquivalente DFAs
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Minimierung endlicher Automanten
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Minimierung endlicher Automanten}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Unerreichbare und äquivalenze Zustände}
+\textbf{Ziel:\;} $L$ sei DFA-Sprache. Man konstruiert einen DFA $M$, so dass $L(M) = L$ und die Anzahl der Zustände $|Q_M|$ minimal ist. \par \abstand
+\textbf{Lösung:}
+\begin{enumerate}
+    \item Eleminierung unerreichbarer Zustände
+    \item Verschmelzung äquivalenter Zustände
+\end{enumerate} \abstand \abstand
+
+\textbf{Definition:\;} $q \in Q$ ist \wichtig{unerreichbar}, wenn es keine Eingabe $w \in \Sigma^*$ gibt, die zu diesem Zustand $q$ führt.
+$$ \forall w \in \Sigma^* \platz q \neq \hat{\delta}(q_0, w) $$
+\textbf{Satz:\;} Die Menge der unerreichbaren Zustände eines DFAs kann in $O(|Q| \cdot |\Sigma|)$ Zeit bestimmt werden. Für den durch die erreichbaren Zustände induzierten Automaten $M'$ gilt $L(M') = L(M)$. \par \abstand
+\textbf{Beweis:\;} DFS oder BFS im Graphen des Automaten  mit Start in $q_0$ liefert alle erreichbaren Zustände, die restlichen sind nicht erreichbar. Die zweite Behauptung ergibt sich aus der Definition von $\hat{\delta}$. \par \abstand \abstand
+
+\textbf{Definition:\;} $M$ ist ein DFA. Zwei Zustände $q, q' \in Q$ heißen \emph{äquivalent}\index{äquivalenze Zustände}, wenn für alle $w \in \Sigma^*$ gilt
+$$ \hat{\delta}(q, w) \in F \platz \Leftrightarrow \platz \hat{\delta}(q', w) \in F $$
+Wir schreiben dann $q \equiv q'$. $\equiv$ ist eine Äquivalenzrelation.
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Äquivalenzklassenautomat}
+\textbf{Definition:\;} Der \wichtig{Äquivalenzklassenautomat} $M'$ von $M$ hat die folgende Gestalt:
+\begin{itemize}
+    \item $Q' = Q_{/ \equiv}$ (Menge der Äquivalenzklassen)
+    \item $\Sigma' = \Sigma$
+    \item $q_0' = [q_0]_{\equiv}$
+    \item $F' = \{ [q]_{\equiv} \tr q \in F \}$
+    \item $\delta'([q]_{\equiv}, a) = [\delta(q, a)]_{\equiv} \in Q'$
+\end{itemize}
+
+\textbf{Beweise:}
+\begin{enumerate}
+    \item $F'$ ist wohldefiniert. \par
+    Zu zeigen ist: Aus $q \equiv q'$ folgt, dass $q \in F \Leftrightarrow q' \in F$. \par
+    Dazu muss man $q \equiv q'$ mit dem Wort $w = \varepsilon$ in die Definition von $\equiv$ einsetzen.
+    \begin{eqnarray*}
+        \hat{\delta}(q, \varepsilon) \in F &\Leftrightarrow& \hat{\delta}(q', \varepsilon) \in F \\
+        q \in F &\Leftrightarrow& q' \in F
+    \end{eqnarray*}
+    \item $\delta'$ ist wohldefiniert. \par
+    Zu zeigen ist: Aus $q \equiv q'$ folgt, dass $\forall a \in \Sigma \platz \delta'([q]_{\equiv}, a) = \delta'([q']_{\equiv}, a)$ \par
+    Aus $q \equiv q'$ folgt, dass $\forall w \in \Sigma^* \platz \hat{\delta}(q, w) \in F \Leftrightarrow \hat{\delta}(q', w) \in F$. \par
+    Insbesondere gilt für jedes $w = aw'$: $\hat{\delta}(q, aw') \in F \Leftrightarrow \hat{\delta}(q', aw') \in F$. \par
+    Laut Definition von $\hat{\delta}$ ist $\hat{\delta}(q, aw') = \hat{\delta}(\delta(q, a), w')$. \par
+    Das bedeutet, dass $\hat{\delta}(\delta(q, a), w) \in F \Leftrightarrow \hat{\delta}(\delta(q', a), w) \in F$. \par
+    Daraus folgt: $\delta(q, a) \equiv \delta(q', a)$, also $\delta'([q]_{\equiv}, a) = \delta'([q']_{\equiv}, a)$.
+    \item $L(M) = L(M')$. \par
+    Aus $w {\in \atop \notin} L(M)$ folgt, dass die Zustandsfolge $q_0, q_1, \ldots q_n$ mit $q_n {\in \atop \notin} F$ endet. Die entsprechende Zustandfolge $[q_0]_{\equiv}, [q_1]_{\equiv}, \ldots [q_n]_{\equiv}$ für den Äquivalenzautomaten endet folglich mit $[q_n]_{\equiv} {\in \atop \notin} F'$ folgt.
+\end{enumerate}
+\pagebreak
+
+\textbf{Konstruktion eines Äquivalenzklassenautomaten:}
+$$ q \equiv q' \platz \Leftrightarrow \platz \left( \forall w \in \Sigma^* \platz \hat{\delta}(q, w) \in F \Leftrightarrow \hat{\delta}(q', w) \in F \right) $$
+Algorithmische Bestimmung von $\equiv$ über $\not\equiv$:
+\begin{eqnarray*}
+    q \not\equiv q' &\Leftrightarrow& \left( \exists w \in \Sigma^* \platz \hat{\delta}(q, w) \in F \wedge \hat{\delta}(q', w) \notin F \right) \text{ oder} \\
+                    &               & \left( \exists w \in \Sigma^* \platz \hat{\delta}(q, w) \notin F \wedge \hat{\delta}(q', w) \in F \right)
+\end{eqnarray*}
+
+Beobachtung:
+\begin{enumerate}
+    \item Ist $w = aw'$ Zeuge für $q \not\equiv q'$, dann ist $w'$ Zeuge für $\delta(q, a) \not\equiv \delta(q', a)$
+    \begin{center}
+        \includegraphics{skript/grafiken/aequivzeugen}
+    \end{center}
+    \item Ist $w''$ der kürzeste Zeuge für $\delta(q, a) \not\equiv \delta(q', a)$, dann ist $aw''$ ein kürzester Zeuge für $q \not\equiv q'$, der mit $a$ beginnt.
+\end{enumerate}
+
+Algorithmus für $\not\equiv$:\; Man beginnt mit dem Zeugen $w$ der Länge $0$ (d.h. $w~=~\varepsilon$). Dann testet man alle Nichtäquivalenzen durch schrittweise Erhöhung der Zeugenlänge. Wenn nach einer Erhöhung keine \emph{neuen} Nichtäquivalenzen auftreten, stoppt das Verfahren. \par \abstand
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Nerode-Relation}
+\textbf{Definition:\;} Für $L \subseteq \Sigma^*$ ist $R_L$ in $\Sigma^*$ die \wichtig{Nerode-Relation} (für alle $x, y \in \Sigma^*$):
+$$ x \; R_L \; y \platz \Leftrightarrow \platz ( \forall w \in \Sigma^* \platz xw \in L \platz \Leftrightarrow \platz yw \in L ) $$
+\vspace{0.2cm}
+
+\textbf{Satz:\;} Die Menge der Äquivalenzklassen $\Sigma^*_{/ R_L}$ ist genau dann endlich, wenn $L$ eine DFA-Sprache ist. \par \abstand
+\textbf{Beweis ($\Rightarrow$):\;} Konstruktion eines DFAs für $L$, mit einem Zustand für jede Äquivalenzklasse~$[x]_{R_L}$ von $R_L$.
+\begin{itemize}
+    \item $q_0 = [\varepsilon]_{R_L}$
+    \item $\delta([x]_{R_L}, a) = [xa]_{R_L}$
+    \item $[x]_{R_L} \in F \Leftrightarrow x \in L$
+    \item $L(M) = L$
+\end{itemize}
+Das heißt, man kann einen DFA konstruieren, sofern die Anzahl der Äquivalenzklassen der Nerode-Relation $R_L$ endlich ist. \par \abstand
+\textbf{Beweis ($\Leftarrow$):\;} Man wähle $x, y \in \Sigma^*$ beliebig.
+\begin{itemize}
+    \item Wenn $\hat{\delta}(q_0, x) = \hat{\delta}(q_0, y)$, dann $ x \; R_L \; y $, somit $[x]_{R_L} = [y]_{R_L}$.
+    \item Wenn $\neg (x \; R_L \; y)$, somit $[x]_{R_L} \neq [y]_{R_L}$, dann $\hat{\delta}(q_0, x) \neq \hat{\delta}(q_0, y)$.
+\end{itemize}
+Daraus folgt, dass es maximal so viele Äquivalenzklassen in der Nerode-Relation geben kann wie Zustände in einem beliebigen DFA. Damit ist die Anzahl der Äquivalenzklassen endlich.
+$$ \left| \Sigma^*_{/ R_L} \right| \leq |Q| $$
+\vspace{0.2cm}
+
+\textbf{Satz:\;} Die Anzahl der Zustände von $M_{\equiv}$ entspricht maximal der Anzahl der Äquivalenzklassen von~$R_L$. \par \abstand
+\textbf{Beweis:\;} Man wähle $x, y \in \Sigma^*$ beliebig.
+\begin{itemize}
+    \item Wenn $x \; R_L\;  y$, dann $\hat{\delta}(q_0, x) \equiv \hat{\delta}(q_0, y)$
+    \item Wenn $\hat{\delta}(q_0, x) \not\equiv \hat{\delta}(q_0, y)$, dann $\neg (x \; R_L \; y)$
+\end{itemize}
+Daraus folgt, dass es maximal so viele Zustände im Äquivalenzklassenautomaten gibt wie Äquivalenzklassen in der Nerode-Relation.
+$$ \left| Q_{/ \equiv} \right| \leq \left| \Sigma^*_{/ R_L} \right| $$
+\pagebreak
+
+\textbf{Satz:\;} Die Äquivalenzklassenautomat $M_{\equiv}$ von $M$ ist ein Minimalautomat für~$L(M)$. \par \abstand
+\textbf{Beweis:\;} Sei $M''$ ein Minimalautomat für $L(M)$, dann folgt daraus:
+$$ \left| Q_{/ \equiv} \right|  \leq \left| \Sigma^*_{/ R_L} \right| \leq |Q''| $$
+Aber alle $\leq$ sind $=$, sonst wäre $Q''$ nicht minimal. Daraus folgt
+$$\left| Q_{/ \equiv} \right| = \left| Q'' \right|$$
+und $M_{\equiv}$ ist Minimalautomat. \par \vspace{0.7cm}
+
+\textbf{Beispiel:\;} Überprüfung mit Hilfe der Nerode-Relation, ob eine Sprache $L$ DFA-Sprache ist.
+\begin{itemize}
+    \item $L = \{ w \in \{ 0,1 \}^* \tr \text{$w$ beginnt mit $01$} \}$ \par
+    Äquivalenzklassen von $R_L$
+    \begin{itemize}
+        \item $[\varepsilon]_{R_L} = \{ \varepsilon \}$
+        \item $[0]_{R_L} = \{ 0 \}$
+        \item $[1]_{L_R} = \{ 1, 00 \} \circ \Sigma^*$
+        \item $[01]_{R_L} = \{ 01 \} \circ \Sigma^*$
+    \end{itemize}
+    Alle Äquivalenzklassen von $R_L$ ergeben wieder $L$:
+    $$ L = [\varepsilon]_{R_L} \cup [0]_{R_L} \cup [1]_{R_L} \cup [01]_{R_L} $$
+    Da die Anzahl der Äquivalenzklassen von $R_L$ endlich ist, ist $L$ DFA-Sprache.
+    \item $L = \{ 0^n 1^n \tr n \in \nat \}$ \par
+    Die Anzahl der Äquivalenzklassen ist unendlich, da $\neg (0^i \; R_L \; 0^j)$ für $i \neq j$. \par
+    Begründung: Für $w = 1^i$ ist $0^i \; 1^i \in L$, aber $0^j \; 1^i \notin L$. \par
+    Damit ist $L$ keine DFA-Sprache.
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Reguläre Sprachen und reguläre Ausdrücke
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reguläre Sprachen und reguläre Ausdrücke}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Einführung}
+\textbf{Definition:\;} \emph{Reguläre Sprachen}\index{reguläre Sprachen} über $\Sigma$ sind induktiv definiert:
+\begin{enumerate}
+    \item $L = \emptyset$ und $L = \{ a \}$ für $a \in \Sigma$ sind regulär.
+    \item Sind $L_1$ und $L_2$ regulär, dann ist auch $L_1 \cup L_2$ regulär.
+    \item Sind $L_1$ und $L_2$ regulär, dann ist auch $L_1 \circ L_2$ regulär.
+    \item Ist $L_1$ regulär, dann ist auch $L^*_1$ regulär.
+\end{enumerate}
+Eine vollständige Beschreibung einer regulären Sprache durch 1. - 4. nennt man einen \emph{regulären Ausdruck}\index{reguläre Ausdrücke}. \par \abstand
+
+\textbf{Beispiele:}
+\begin{itemize}
+    \item $L = \{ w \in \{ 0,1 \}^* \tr \text{$w$ beginnt mit 0} \} = 0(\{0\} \cup \{1\})^* = 0 \{0,1\}^* = 0 \Sigma^*$
+    \item $L = \{ \varepsilon \} = \emptyset^*$
+    \item $L = \{ w \in \{0,1\}^* \tr \text{$w$ hat 3 aufeinander folgende 1} \} = \Sigma^* 111 \Sigma^*$
+    \item $L = \{ w \in \{0,1\}^* \tr \text{$w$ enthält \emph{nicht} 010} \}$
+    \begin{itemize}
+        \item Fall 1: 01 tritt nicht auf in $w$: $1^*0^*$
+        \item Fall 2: 01 tritt (endlich oft) auf, muss mit 1 weitergehen, außer beim letzten 01, da dort auch $\varepsilon$ möglich ist.
+    \end{itemize}
+    $L = 1^*0^* \cup 1^*0^* (0111^*0^*)^*01(11^*0^* \cup \emptyset^*)$
+\end{itemize}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Zusammenhang zu DFA-Sprachen}
+
+\textbf{Satz:\;} $L$ ist genau dann eine reguläre Sprache, wenn $L$ DFA-Sprache ist. \par \abstand
+
+\textbf{Beweis ($\Rightarrow$):\;} Man konstruiert einen DFA.
+\begin{itemize}
+    \item $L = \emptyset$ oder $L = \{ a \}$
+    \begin{center}
+        \includegraphics{skript/grafiken/regausdruck}
+    \end{center}
+    \item $L$ ist Vereinigung, Konkatenation oder Stern. \par \abstand
+    $\left. \begin{array}{l@{\platz \rightarrow \platz}l}
+    L = L_1 \cup L_2 & L(M) = L(M_1) \cup L(M_2) \\
+    L = L_1 \circ L_2 & L(M) = L(M_1) \circ L(M_2) \\
+    L = L_1^* & L(M) = L(M^*)
+    \end{array} \right\} \text{ (siehe \ref{dfaverein} und \ref{dfakonkat})}$
+\end{itemize} \abstand
+\textbf{Beweis ($\Leftarrow$):\;} Sei $L$ sei eine DFA-Sprache mit $Q = \{ 1, \ldots n \}$ und dem Anfangszustand $1$. Man konstruiert einen regulären Ausdrucks für $L$ mit dynamischem Programmieren ($1 \leq i, j \leq n$ und $k \geq 0$):
+$$R^k_{i, j} = \{ w \in \Sigma^* \tr \hat{\delta}(i, w) = j \text{ und alle Zwischenzustände $\leq k$} \}$$
+$R^k_{i, j}$ wird schrittweise aufgebaut $k = 0, 1, 2, \ldots$
+\begin{itemize}
+    \item keine Zwischenzustände: $R^0_{i, j}$
+    \begin{itemize}
+        \item Für $i \neq j$ $R^0_{i, j} = \{ a \in \Sigma \tr \delta(i, a) = j \}$
+        \item Für $i = j$ $R^0_{i, i} = \{ a \in \Sigma \tr \delta(i, a) = i \} \cup \{ \varepsilon \}$
+    \end{itemize}
+    \item induktiver Aufbau: $R^{k-1}_{i, j} \rightarrow R^k_{i, j}$
+    $$ R^k_{i, j} = R^{k-1}_{i, j} \cup R^{k-1}_{i, k} \left( R^{k-1}_{k, k} \right)^* R^{k-1}_{k, j} $$
+\end{itemize}
+Alle $R^k_{i, j}$ sind reguläre Ausdrücke. Zur Bestimmung der regulären Sprache von $L(M)$, müssen alle regulären Ausdrücke vom Anfangszustand zu allen akzeptierenden Zuständen vereinigt werden:
+$$ L(M) = \bigcup_{j \in F} R^n_{1, j} $$
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Pumping-Lemma}
+\textbf{Pumping-Lemma:\;} Ist $L$ eine reguläre Sprache, dann gibt es ein $n \in \nat$, so dass für jedes $z \in L$ mit $|z| \geq n$ eine Zerlegung $z = uvw$ existiert mit $|uv| \leq n$ und $|v| \geq 1$ und $uv^iw \in L$ für alle $i \in \nat$. \par \abstand
+\textbf{Beweis:\;} Sei $M$ Minimalautomat für die Sprache $L$ mit $n$ Zuständen und $z$ ein Wort aus $L$ mit $|z| \geq n$. \par
+Wir betrachnen die Bearbeitung der ersten $n$ Symbole von $z$. Dabei treten $n + 1$ Zustände auf. Nach dem Schubfachprinzip gilt: Mindestens ein Zustand $q$ tritt doppelt auf.
+$$ z = u\; v^i \; w \platz (\text{mit } i \geq 1) $$
+\begin{center}
+  \includegraphics{skript/grafiken/pumping1}
+\end{center}
+
+\textbf{Anwendungen:}
+\begin{enumerate}
+    \item $L = \{ 0^n 1^n \tr n \in \nat \}$ ist \emph{nicht} regulär. \par
+    Angenommen $L$ ist regulär. Dann gibt es ein $n$ aus dem Pumping-Lemma. \\
+    Man nimmt das Wort $z = 0^n 1^n \in L$ mit $|z| \geq n$. \\
+    Pumping-Lemma: $z = uvw$, $|uv| \leq n$ und $|v| \geq 1$ \\
+    $\Rightarrow$ $u = 0^i$, $v = 0^j$ mit $i + j \leq n$ und $j \geq 1$ \\
+    $\Rightarrow$ $uv^2w = 0^{n+j} 1^n \notin L$ \platz Widerspruch! \\
+    $\Rightarrow$ $L$ ist \emph{nicht} regulär.
+    \item $L = \{ w \in \{0,1\}^* \tr w^R = w \}$ (Sprache der Palindrome) ist \emph{nicht} regulär. \par
+    Angenommen $L$ ist regulär. Dann gibt es ein $n$ aus dem Pumping-Lemma. \\
+    Man nimmt das Wort $z = 0^n 1 0^n \in L$ mit $|z| \geq n$. \\
+    Pumping-Lemma: $z = uvw$, $|uv| \leq n$, $|v| \geq 1$ \\
+    $\Rightarrow$ $u = 0^i$, $v = 0^j$ mit $j \geq 1$ \\
+    $\Rightarrow$ $uv^2w = 0^{n+j} 1 0^n \notin L$ \platz Widerspruch! \\
+    $\Rightarrow$ $L$ ist \emph{nicht} regulär.
+\end{enumerate}
+
+\textbf{Achtung:\;} Nicht in jedem Fall kann man die Nicht-Regularität einer Sprache mit dem Pumping-Lemma nachweisen. Das heißt, es gibt nicht reguläre Sprachen, die das Pumping-Lemma erfüllen. \par \abstand
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Zusammenfassung
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Zusammenfassung}
+\begin{eqnarray*}
+\text{$L$ ist regulär} && \left\{ \begin{array}{l}
+  \Leftrightarrow \platz \text{$L$ ist DFA-Sprache} \\ \\
+  \Leftrightarrow \platz \text{$\Sigma^*_{/ R_L}$ ist endlich} \\ \\
+  \Leftrightarrow \platz \text{$\overline{L}$ ist regulär ($\overline{L} = \{ w \in \Sigma^* \tr w \notin L \}$)} \\ \\
+  \Leftrightarrow \platz \text{$L^R$ ist regulär}
+\end{array} \right. \\ \\ \\
+\text{$L$ ist regulär} && \left\{ \begin{array}{l}
+  \Rightarrow \platz \text{$L^*$ ist regulär} \\ \\
+  \Rightarrow \platz \text{$L$ erfüllt das Pumping-Lemma}
+\end{array} \right. \\ \\ \\
+\text{$L_1$ und $L_2$ sind regulär} && \left\{ \begin{array}{l}
+  \Rightarrow \platz \text{$L_1 \circ L_2$ sind regulär} \\ \\
+  \Rightarrow \platz \text{$L_1 \cup L_2$ sind regulär} \\ \\
+  \Rightarrow \platz \text{$L_1 \cap L_2$ sind regulär}
+\end{array} \right.
+\end{eqnarray*}
